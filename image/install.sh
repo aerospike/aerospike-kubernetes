@@ -15,7 +15,7 @@
 # limitations under the License.
 
 # This volume is assumed to exist and is shared with parent of the init
-# container. It contains the mysq config.
+# container. It contains the aerospike config.
 
 
 # Changes:
