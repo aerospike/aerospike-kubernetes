@@ -36,8 +36,8 @@ spec:
     # Tells which pods are part of the DNS record
     app: aerospike
 ----
-apiVersion: apps/v1alpha1
-kind: PetSet
+apiVersion: apps/v1beta1
+kind: StatefulSet
 metadata:
   name: aerospike
 spec:
@@ -48,13 +48,13 @@ spec:
       labels:
         app: aerospike
       annotations:
-        # Do not wait on user acknowledgement for pod startup
-        pod.alpha.kubernetes.io/initialized: "true"
+        # Do not wait on user acknowledgement for pod startup, default behavior in StatefulSet
+        # pod.alpha.kubernetes.io/initialized: "true"
         # Init containers run on host before pod startup
         pod.alpha.kubernetes.io/init-containers: '[
           {
              "name": "install",
-             "image": "docker.qe.aerospike.com:80/kube/aerospike-install",
+             "image": "my.docker.repo/kube/aerospike-install",
              "env": [
                   {
                       "name": "POD_NAMESPACE",

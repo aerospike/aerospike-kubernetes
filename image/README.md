@@ -12,11 +12,6 @@ Push the container to your docker registry: `docker push <YOUR_DOCKER_REGISTRY>/
 
 Use this container in your kubernetes Aerospike PetSet (see Example)
 
-## Requirements
-
-* Kubernetes 1.3+ with alpha features (PetSet, init containers)
-* Kubernetes DNS add-in
-
 ## Parameters:
 
 **Kubernetes Namespace**: Set the `POD_NAMESPACE` envvar to set the k8s namespacee 
@@ -62,4 +57,12 @@ spec:
           }
         ]'
 ...
+```
+
+### Hints
+
+* To use an insecure registry, do the following on each (non-master) node.
+```
+edit /etc/sysconfig/docker, by adding the line:
+INSECURE_REGISTRY='--insecure-registry YOUR_REGISTRY_ADDRESS:PORT'
 ```
