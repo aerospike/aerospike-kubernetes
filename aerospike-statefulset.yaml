@@ -25,12 +25,15 @@ metadata:
 apiVersion: v1
 kind: Service
 metadata:
+  # deprecation in 1.10, breaks peer-finder/kube-dns
+  annotations:
+     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
   name: aerospike
   namespace: aerospike-cluster-1
   labels:
       app: aerospike-server
 spec:
-  publishNotReadyAddresses: true # replaces service.alpha.kubernetes.io/tolerate-unready-endpoints
+  publishNotReadyAddresses: true # deprecates service.alpha.kubernetes.io/tolerate-unready-endpoints as of 1.10? see: ubernetes/kubernetes#49239
   ports:
   - port: 3000
     name: aerospike-client
