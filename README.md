@@ -16,7 +16,7 @@ Deploy your StatefulSet: `kubectl create -f aerospike-statefulset.yaml`
 
 **Kubernetes 1.5 (StatefulSet old format)**
 
-Deploy your StatefulSet: `kubectl create -f aerospike-statefulset.yaml``
+Deploy your StatefulSet: `kubectl create -f aerospike-statefulset.yaml`
 
 *note* The last commit of the old template format is `cff91c3`.  
 
