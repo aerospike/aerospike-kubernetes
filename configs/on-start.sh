@@ -1,5 +1,4 @@
 #! /bin/bash
-
 # ------------------------------------------------------------------------------
 # Copyright 2012-2017 Aerospike, Inc.
 #
@@ -17,24 +16,36 @@
 # the License.
 # ------------------------------------------------------------------------------
 
+# This script writes out an aerospike config using a list of newline seperated
+# peer DNS names it accepts through stdin.
 
-CONFIG_VOLUME="/etc/aerospike"
-NAMESPACE=${POD_NAMESPACE:-default}
-for i in "$@"
-do
-case $i in
-    -c=*|--config=*)
-    CONFIG_VOLUME="${i#*=}"
-    shift
-    ;;
-    *)
-    # unknown option
-    ;;
-esac
+# /etc/aerospike is assumed to be a shared volume so we can modify aerospike.conf as required
+
+
+set -e
+set -x
+CFG=/etc/aerospike/aerospike.template.conf
+
+function join {
+    local IFS="$1"; shift; echo "$*";
+}
+
+HOSTNAME=$(hostname)
+# Parse out cluster name, formatted as: petset_name-index
+IFS='-' read -ra ADDR <<< "$(hostname)"
+CLUSTER_NAME="${ADDR[0]}"
+
+while read -ra LINE; do
+    if [[ "${LINE}" == *"${HOSTNAME}"* ]]; then
+        MY_NAME=$LINE
+    fi
+    PEERS=("${PEERS[@]}" $LINE)
 done
 
-echo installing aerospike.conf into "${CONFIG_VOLUME}"
-mkdir -p "${CONFIG_VOLUME}"
-chown -R aerospike:aerospike "${CONFIG_VOLUME}"
-cp /aerospike.conf "${CONFIG_VOLUME}"/
-/peer-finder -on-start=/on-start.sh -service=aerospike -ns=${NAMESPACE}
+for PEER in "${PEERS[@]}"; do
+	sed -i -e "/mesh-seed-placeholder/a \\\t\tmesh-seed-address-port ${PEER} 3002" ${CFG}
+done
+
+
+# don't need a restart, we're just writing the conf in case there's an
+# unexpected restart on the node.

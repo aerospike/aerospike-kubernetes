@@ -15,46 +15,22 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-# Namespace
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: aerospike-cluster-1
----
-# Headless service to provide DNS lookup
-apiVersion: v1
-kind: Service
-metadata:
-  # deprecation in 1.10, breaks peer-finder/kube-dns
-  annotations:
-     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
-  name: aerospike
-  namespace: aerospike-cluster-1
-  labels:
-      app: aerospike-server
-spec:
-  publishNotReadyAddresses: true # deprecates service.alpha.kubernetes.io/tolerate-unready-endpoints as of 1.10? see: ubernetes/kubernetes#49239
-  ports:
-  - port: 3000
-    name: aerospike-client
-  # *.aerospike.default.svc.cluster.local
-  clusterIP: None
-  selector:
-    # Tells which pods are part of the DNS record
-    app: aerospike
----
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: aerospike
-  namespace: aerospike-cluster-1
+  namespace: $NAMESPACE
+  labels: &AerospikeDeploymentLabels
+    app: $APP_NAME
 spec:
-  serviceName: "aerospike"
-  replicas: 3
+  serviceName: aerospike
+  selector:
+    matchLabels:
+      app: $APP_NAME
+  replicas: $AEROSPIKE_NODES
   template:
     metadata:
-      labels:
-        app: aerospike
+      labels: *AerospikeDeploymentLabels
     spec:
       terminationGracePeriodSeconds: 30
       containers:
@@ -67,16 +43,43 @@ spec:
           name: aero-mesh
         - containerPort: 3003
           name: aero-info
+	  # Do not stop node before migrations are complete
+        lifecycle:
+          preStop:
+            exec:
+              command: 
+              - /bin/sh
+              - -c
+              - "while true; do finished=0; for part in $( asadm --no-config-file -e 'asinfo -v statistics -l' | grep migrate_par | cut -d= -f2); do if [ $part != 0 ]; then break; fi; finished=1; done; if [ $finished != 1 ]; then sleep 15; else exit 0; fi; done"
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "asinfo -v build"
+          initialDelaySeconds: 30
+          periodSeconds: 60
         readinessProbe:
           tcpSocket:
               port: 3000
-          initialDelaySeconds: 15
+          initialDelaySeconds: 10
           timeoutSeconds: 1
+          periodSeconds: 10
         volumeMounts:
         - name: confdir
           mountPath: /etc/aerospike
-        # Downward API:
+        - name: datadir
+          mountPath: /opt/aerospike/data
         env:
+        - name: NAMESPACE
+          value: "$AEROSPIKE_NAMESPACE"
+        - name: REPL_FACTOR
+          value: "$AEROSPIKE_REPL"
+        - name: MEM_GB
+          value: "$AEROSPIKE_MEM"
+        - name: DEFAULT_TTL
+          value: "$AEROSPIKE_TTL"
+        # Downward API:
         - name: MY_POD_NAME
           valueFrom:
             fieldRef:
@@ -90,16 +93,35 @@ spec:
             fieldRef:
               fieldPath: status.podIP
       initContainers:
-      - name: aerospike-install
-        image: <YOUR_REPOSITORY>/aerospike-install
+      - name: aerospike-init
+        image: aerospike/aerospike-tools
+        command: ["/bin/sh"]
+        args: ["-c", "cp /configs/install.sh /install.sh && chmod +x /install.sh && /install.sh"]
         volumeMounts:
         - name: confdir
           mountPath: /etc/aerospike
-        env:
+        - name: initconfigs
+          mountPath: /configs
+        env:    # Variables needed by peer-finder for discovery
         - name: POD_NAMESPACE
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
+        - name: SERVICE
+          value: aerospike
       volumes:
       - name: confdir
         emptyDir: {}
+      - name: initconfigs
+        configMap:
+          name: aerospike-conf
+  volumeClaimTemplates:
+  - metadata:
+      name: datadir
+      labels: *AerospikeDeploymentLabels
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: ${AEROSPIKE_MEM}Gi
+      storageClassName: ssd
