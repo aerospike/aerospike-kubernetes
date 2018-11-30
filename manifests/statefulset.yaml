@@ -43,7 +43,7 @@ spec:
           name: aero-mesh
         - containerPort: 3003
           name: aero-info
-	  # Do not stop node before migrations are complete
+        # Do not stop node before migrations are complete
         lifecycle:
           preStop:
             exec:
