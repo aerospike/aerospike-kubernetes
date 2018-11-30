@@ -55,30 +55,7 @@ kubectl create configmap aerospike-conf -n $NAMESPACE --from-file=configs/
 
 ## Requirements
 
-* Kubernetes 1.3+ with alpha features (PetSet, init containers)   
-or  
-* Kubernetes 1.5+ with beta features (StatefulSet)  
-or
 * Kubernetes 1.8+
-
-
 * Kubernetes DNS add-in
 
 
-## Notes:
-
-**Kubernetes 1.8+ (StatefulSet)**
-
-Deploy your StatefulSet: `kubectl create -f aerospike-statefulset.yaml`
-
-**Kubernetes 1.5 (StatefulSet old format)**
-
-Deploy your StatefulSet: `kubectl create -f aerospike-statefulset.yaml`
-
-*note* The last commit of the old template format is `cff91c3`.  
-
-*note* PetSet, a k8s 1.3 alpha feature, is now StatefulSet, a 1.5 beta feature.
-
-**Kubernetes 1.3 (PetSet)**
-
-Deploy your PetSet: `kubectl create -f aerospike-petset.yaml`
