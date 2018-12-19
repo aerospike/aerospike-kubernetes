@@ -125,3 +125,4 @@ spec:
         requests:
           storage: ${AEROSPIKE_MEM}Gi
       storageClassName: ssd
+---
