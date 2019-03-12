@@ -15,7 +15,7 @@ nor Google Marketplace specific items.
 
 Set environment variables (modify if necessary):
 
-```
+```sh
 export APP_NAME=aerospike
 export NAMESPACE=default
 export AEROSPIKE_NODES=3
@@ -35,27 +35,23 @@ Uncomment either the storageclass-gcp.yaml or storageclass-aws.yaml, or provide 
 
 Expand manifest template:
 
-```
+```sh
 cat manifests/* | envsubst > expanded.yaml
 ```
 
 Deploy:
 
-```
+```sh
 kubectl create -f expanded.yaml
 ```
 
 Create the configmap object:
 
-```
+```sh
 kubectl create configmap aerospike-conf -n $NAMESPACE --from-file=configs/
 ```
-
-
 
 ## Requirements
 
 * Kubernetes 1.8+
 * Kubernetes DNS add-in
-
-
