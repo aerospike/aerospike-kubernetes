@@ -33,6 +33,12 @@ Uncomment either the storageclass-gcp.yaml or storageclass-aws.yaml, or provide 
 
 ### Deploy:
 
+Create the configmap object:
+
+```sh
+kubectl create configmap aerospike-conf -n $NAMESPACE --from-file=configs/
+```
+
 Expand manifest template:
 
 ```sh
@@ -43,12 +49,6 @@ Deploy:
 
 ```sh
 kubectl create -f expanded.yaml
-```
-
-Create the configmap object:
-
-```sh
-kubectl create configmap aerospike-conf -n $NAMESPACE --from-file=configs/
 ```
 
 ## Requirements
