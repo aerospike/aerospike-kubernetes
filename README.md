@@ -39,17 +39,19 @@ Expand manifest template:
 cat manifests/* | envsubst > expanded.yaml
 ```
 
+Create the configmap object:
+
+```sh
+kubectl create configmap aerospike-conf -n $NAMESPACE --from-file=configs/
+```
+
 Deploy:
 
 ```sh
 kubectl create -f expanded.yaml
 ```
 
-Create the configmap object:
 
-```sh
-kubectl create configmap aerospike-conf -n $NAMESPACE --from-file=configs/
-```
 
 ## Requirements
 
