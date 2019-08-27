@@ -1,7 +1,7 @@
 #! /bin/bash
 
 # ------------------------------------------------------------------------------
-# Copyright 2012-2017 Aerospike, Inc.
+# Copyright 2012-2019 Aerospike, Inc.
 #
 # Portions may be licensed to Aerospike, Inc. under one or more contributor
 # license agreements.
