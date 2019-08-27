@@ -1,0 +1,13 @@
+.DS_Store
+.git/
+.gitignore
+# Common backup files
+*.swp
+*.bak
+*.tmp
+*~
+# Various IDEs
+.project
+.idea/
+*.tmproj
+.vscode/

@@ -68,8 +68,9 @@ spec:
         volumeMounts:
         - name: confdir
           mountPath: /etc/aerospike
-        - name: datadir
-          mountPath: /opt/aerospike/data
+        volumeDevices:
+        - name: data-dev
+          devicePath: /dev/sdb
         env:
         - name: NAMESPACE
           value: "$AEROSPIKE_NAMESPACE"
@@ -117,9 +118,10 @@ spec:
           name: aerospike-conf
   volumeClaimTemplates:
   - metadata:
-      name: datadir
+      name: data-dev
       labels: *AerospikeDeploymentLabels
     spec:
+      volumeMode: Block
       accessModes:
         - ReadWriteOnce
       storageClassName: ssd
