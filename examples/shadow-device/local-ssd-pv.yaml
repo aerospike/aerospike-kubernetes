@@ -15,9 +15,26 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-# Namespace
+kind: PersistentVolume
 apiVersion: v1
-kind: Namespace
 metadata:
-  name: $NAMESPACE
+  name: local-ssd
+spec:
+  volumeMode: Block
+  capacity:
+    storage: 75Gi
+  local:
+    path: /dev/nvme1n1
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: aerospike-ssd
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - aerospike-node-1
 ---

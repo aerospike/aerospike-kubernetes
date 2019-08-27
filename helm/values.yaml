@@ -15,9 +15,32 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-# Namespace
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: $NAMESPACE
----
+###
+### Configuration file to set default values for deployment using Helm
+###
+
+### Statefulset and K8s config variables
+Namespace: default
+dBReplicas: 3 # Also controles number of nodes in the cluster.
+TerminationGracePeriodSeconds: 30
+
+### Aerospike server community docker image
+Image:
+  Repository: aerospike/aerospike-server
+  Tag: 4.6.0.2
+
+### Aerospike tools docker image
+ToolsImage:
+  Repository: aerospike/aerospike-tools
+  Tag: 3.21.1
+
+### Aerospike Configuration env variables
+AerospikeNamespace: "test"
+AerospikeNamespaceMemoryGB: "1"
+AerospikeReplicationFactor: "2"
+AerospikeDefaultTTL: ""
+
+### Deployment specific configurations
+ConfigDir: /etc/aerospike/
+DataDir: /opt/aerospike/data/
+StorageClass: gp2

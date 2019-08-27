@@ -27,7 +27,7 @@ spec:
   selector:
     matchLabels:
       app: $APP_NAME
-  replicas: $AEROSPIKE_NODES
+  replicas: 1
   template:
     metadata:
       labels: *AerospikeDeploymentLabels
@@ -68,8 +68,11 @@ spec:
         volumeMounts:
         - name: confdir
           mountPath: /etc/aerospike
-        - name: datadir
-          mountPath: /opt/aerospike/data
+        volumeDevices:
+        - name: data-dev
+          devicePath: /dev/sda
+        - name: shadow-dev
+          devicePath: /dev/sdb
         env:
         - name: NAMESPACE
           value: "$AEROSPIKE_NAMESPACE"
@@ -115,15 +118,28 @@ spec:
       - name: initconfigs
         configMap:
           name: aerospike-conf
-  volumeClaimTemplates:
-  - metadata:
-      name: datadir
-      labels: *AerospikeDeploymentLabels
-    spec:
-      accessModes:
-        - ReadWriteOnce
-      storageClassName: ssd
-      resources:
-        requests:
-          storage: ${AEROSPIKE_MEM}Gi
+      - name: data-dev
+        persistentVolumeClaim:
+          claimName: local-ssd-claim
+      - name: shadow-dev
+        persistentVolumeClaim:
+          claimName: shadow-device-claim
 ---
+
+###
+### 'volumeClaimTemplates' can be used for shadow device claim. For example, using 'aws-ebs' provisioner (dynamic provisioning)
+### Note that dynamic provisioning for local volumes are not supported yet.
+###
+### volumeClaimTemplates:
+### - metadata:
+###     name: shadow-dev
+###     labels: *AerospikeDeploymentLabels
+###   spec:
+###     volumeMode: Block
+###     accessModes:
+###       - ReadWriteOnce
+###     storageClassName: gp2
+###     resources:
+###       requests:
+###         storage: 75Gi
+###

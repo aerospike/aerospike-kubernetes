@@ -1,13 +1,12 @@
-# aerospike-kube
+# aerospike-kubernetes
 
-This project contains the init container used in Kubernetes (k8s) and the Aerospike StatefulSet definition
-
+This project contains the init container used in Kubernetes (k8s) and the Aerospike StatefulSet definition.
 This manifest will allow you to deploy a fully formed Aerospike cluster in minutes.
 
-A docker registry is no longer required to build an init container.
+This project uses:
 
-Design is similar to github.com/aerospike/aerospike-gke, but without the Aerospike Enterprise specific items
-nor Google Marketplace specific items.
+- [aerospike-server docker image](https://hub.docker.com/r/aerospike/aerospike-server)
+- [aerospike-tools docker image](https://hub.docker.com/r/aerospike/aerospike-tools)
 
 ## Usage:
 
@@ -25,33 +24,44 @@ export AEROSPIKE_MEM=1
 export AEROSPIKE_TTL=0
 ```
 
-All `AEROSPIKE_*` parameters except AEROSPIKE\_NODES are optional. Default values are listed above.
-
+All `AEROSPIKE_*` parameters except AEROSPIKE\_NODES, AEROSPIKE_MEM are optional. Default values are listed above.
 All other parameters are required.
 
-Uncomment either the storageclass-gcp.yaml or storageclass-aws.yaml, or provide your own storage class.
+### Storage: 
 
-### Deploy:
+You can configure your own storage class or use/edit the provided `storageclass-gcp.yaml` or `storageclass-aws.yaml`.
 
-Expand manifest template:
+For Kubernetes version > 1.11, there's a default storage class `gp2` available on AWS EKS clusters, uses `aws-ebs` provisioner and volume type `gp2`.
+
+### Examples:
+
+To view and run the examples, go to [`examples/`](examples/)
+
+### Deployment:
+
+Please follow the below steps or run `start.sh` script:
+
+1. Expand manifest template:
 
 ```sh
 cat manifests/* | envsubst > expanded.yaml
 ```
 
-Create the configmap object:
+2. Create the configmap object:
 
 ```sh
 kubectl create configmap aerospike-conf -n $NAMESPACE --from-file=configs/
 ```
 
-Deploy:
+3. Deploy:
 
 ```sh
 kubectl create -f expanded.yaml
 ```
 
+### Helm Charts
 
+Helm chart for the same can be found [here](helm/)
 
 ## Requirements
 

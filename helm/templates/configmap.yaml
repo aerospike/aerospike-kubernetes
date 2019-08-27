@@ -15,9 +15,14 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-# Namespace
+# ConfigMap for supplying aerospike config template and other necessary scripts.
+
 apiVersion: v1
-kind: Namespace
+kind: ConfigMap
 metadata:
-  name: $NAMESPACE
+  name: {{ .Release.Name }}-conf
+data:
+  on-start.sh: {{ tpl (.Files.Get "files/on-start.sh") . | quote }}
+  install.sh: {{ tpl (.Files.Get "files/install.sh") . | quote }}
+  aerospike.template.conf: {{ tpl (.Files.Get "files/aerospike.template.conf") . | quote }}
 ---

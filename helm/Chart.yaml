@@ -15,9 +15,14 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-# Namespace
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: $NAMESPACE
----
+appVersion: "4.6.0.2"
+description: A Helm chart for Aerospike on Kubernetes
+name: aerospike
+version: 1.0.0
+sources:
+- https://github.com/aerospike/aerospike-server.docker
+- https://github.com/aerospike/aerospike-tools.docker
+maintainers:
+- name: spkesan
+  email: kesan@aerospike.com

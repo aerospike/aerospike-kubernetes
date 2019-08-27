@@ -15,27 +15,33 @@
 # the License.
 # ------------------------------------------------------------------------------
 
+## Statefulset definition.
+
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: aerospike
-  namespace: $NAMESPACE
+  name: {{ template "aerospike.fullname" . }}
+  namespace: {{ .Values.Namespace }}
   labels: &AerospikeDeploymentLabels
-    app: $APP_NAME
+    app: {{ template "aerospike.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
 spec:
-  serviceName: aerospike
+  serviceName: {{ template "aerospike.fullname" . }}
   selector:
     matchLabels:
-      app: $APP_NAME
-  replicas: $AEROSPIKE_NODES
+      app: {{ template "aerospike.name" . }}
+      chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+      release: {{ .Release.Name }}
+  replicas: {{ .Values.dBReplicas }}
   template:
     metadata:
       labels: *AerospikeDeploymentLabels
     spec:
-      terminationGracePeriodSeconds: 30
+      terminationGracePeriodSeconds: {{ .Values.TerminationGracePeriodSeconds }}
       containers:
       - name: aerospike
-        image: aerospike/aerospike-server
+        image: "{{ .Values.Image.Repository }}:{{ .Values.Image.Tag }}"
         ports:
         - containerPort: 3000
           name: aero-clients
@@ -67,18 +73,18 @@ spec:
           periodSeconds: 10
         volumeMounts:
         - name: confdir
-          mountPath: /etc/aerospike
-        - name: datadir
-          mountPath: /opt/aerospike/data
+          mountPath: {{ .Values.ConfigDir }}
+        - name: data-dev
+          mountPath: {{ .Values.DataDir }}
         env:
         - name: NAMESPACE
-          value: "$AEROSPIKE_NAMESPACE"
+          value: {{ .Values.AerospikeNamespace | quote }}
         - name: REPL_FACTOR
-          value: "$AEROSPIKE_REPL"
+          value: {{ .Values.AerospikeReplicationFactor | quote }}
         - name: MEM_GB
-          value: "$AEROSPIKE_MEM"
+          value: {{ .Values.AerospikeNamespaceMemoryGB | quote }}
         - name: DEFAULT_TTL
-          value: "$AEROSPIKE_TTL"
+          value: {{ .Values.AerospikeDefaultTTL | quote }}
         # Downward API:
         - name: MY_POD_NAME
           valueFrom:
@@ -94,7 +100,7 @@ spec:
               fieldPath: status.podIP
       initContainers:
       - name: aerospike-init
-        image: aerospike/aerospike-tools
+        image: "{{ .Values.ToolsImage.Repository }}:{{ .Values.ToolsImage.Tag }}"
         command: ["/bin/sh"]
         args: ["-c", "cp /configs/install.sh /install.sh && chmod +x /install.sh && /install.sh"]
         volumeMounts:
@@ -108,22 +114,22 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         - name: SERVICE
-          value: aerospike
+          value: {{ template "aerospike.fullname" . }}
       volumes:
       - name: confdir
         emptyDir: {}
       - name: initconfigs
         configMap:
-          name: aerospike-conf
+          name: {{ .Release.Name }}-conf
   volumeClaimTemplates:
   - metadata:
-      name: datadir
+      name: data-dev
       labels: *AerospikeDeploymentLabels
     spec:
       accessModes:
         - ReadWriteOnce
-      storageClassName: ssd
+      storageClassName: {{ .Values.StorageClass }}
       resources:
         requests:
-          storage: ${AEROSPIKE_MEM}Gi
+          storage: {{ .Values.AerospikeNamespaceMemoryGB }}Gi
 ---

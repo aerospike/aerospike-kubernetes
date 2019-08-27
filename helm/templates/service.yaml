@@ -15,9 +15,27 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-# Namespace
+# Headless service to provide DNS lookup
 apiVersion: v1
-kind: Namespace
+kind: Service
 metadata:
-  name: $NAMESPACE
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+  name: {{ template "aerospike.fullname" . }}
+  namespace: {{ .Values.Namespace }}
+  labels:
+      app: {{ template "aerospike.name" . }}
+      chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+      release: {{ .Release.Name }}
+spec:
+  publishNotReadyAddresses: true
+  ports:
+  - port: 3000
+    name: aerospike-client
+  # *.aerospike.default.svc.cluster.local
+  clusterIP: None
+  selector:
+    # Tells which pods are part of the DNS record
+    app: {{ template "aerospike.name" . }}
+    release: {{ .Release.Name }}
 ---

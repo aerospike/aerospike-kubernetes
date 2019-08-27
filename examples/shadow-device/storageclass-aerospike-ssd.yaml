@@ -15,9 +15,10 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-# Namespace
-apiVersion: v1
-kind: Namespace
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
 metadata:
-  name: $NAMESPACE
+  name: aerospike-ssd
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
 ---
