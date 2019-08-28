@@ -1,11 +1,11 @@
 # aerospike-kubernetes
 
-This project uses Aerospike Server Community Edition. For Aerospike Server Enterprise Edition please refer [aerospike/aerospike-kubernetes-enterprise](https://github.com/aerospike/aerospike-kubernetes-enterprise). 
+This project uses Aerospike Server Community Edition. For Aerospike Server Enterprise Edition, please refer [aerospike/aerospike-kubernetes-enterprise](https://github.com/aerospike/aerospike-kubernetes-enterprise). 
 
-It contains the init container used in Kubernetes (k8s) and the Aerospike StatefulSet definition.
+This project contains the init container used in Kubernetes (k8s) and the Aerospike StatefulSet definition.
 These manifests will allow you to deploy a fully formed Aerospike cluster in minutes.
 
-This project uses:
+It uses:
 
 - [aerospike-server docker image](https://hub.docker.com/r/aerospike/aerospike-server)
 - [aerospike-tools docker image](https://hub.docker.com/r/aerospike/aerospike-tools)
