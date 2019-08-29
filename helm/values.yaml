@@ -20,27 +20,62 @@
 ###
 
 ### Statefulset and K8s config variables
-Namespace: default
-dBReplicas: 3 # Also controles number of nodes in the cluster.
-TerminationGracePeriodSeconds: 30
+namespace: default
+dBReplicas: 1 # Also controles number of nodes in the cluster.
+terminationGracePeriodSeconds: 30
 
-### Aerospike server community docker image
-Image:
-  Repository: aerospike/aerospike-server
-  Tag: 4.6.0.2
+### Aerospike server Community docker image
+image:
+  repository: aerospike/aerospike-server
+  tag: 4.6.0.2
 
 ### Aerospike tools docker image
-ToolsImage:
-  Repository: aerospike/aerospike-tools
-  Tag: 3.21.1
+toolsImage:
+  repository: aerospike/aerospike-tools
+  tag: 3.21.1
 
 ### Aerospike Configuration env variables
-AerospikeNamespace: "test"
-AerospikeNamespaceMemoryGB: "1"
-AerospikeReplicationFactor: "2"
-AerospikeDefaultTTL: ""
+aerospikeNamespace: "test"
+aerospikeNamespaceMemoryGB: "1"
+aerospikeReplicationFactor: "2"
+aerospikeDefaultTTL: ""
 
 ### Deployment specific configurations
-ConfigDir: /etc/aerospike/
-DataDir: /opt/aerospike/data/
-StorageClass: gp2
+
+persistenceStorage: {}
+#  - mountPath: /opt/aerospike/data
+#    enabled: false
+#    name: datadir
+#    storageClass: ssd
+#    accessMode: ReadWriteOnce
+#    volumeMode: Filesystem
+#    size: 1Gi
+#  - devicePath: /dev/sdb
+#    enabled: false
+#    name: data-dev
+#    storageClass: ssd
+#    accessMode: ReadWriteOnce
+#    size: 1Gi
+#    volumeMode: Block
+
+# Don't specify same 'mountPath' in both 'volumes' and 'persistenceStorage' configs.
+volumes:
+ - mountPath: /opt/aerospike/data
+   name: datadir
+   template:
+     emptyDir: {}
+#  - mountPath: /opt/aerospike/data2
+#    name: datadir2
+#    template:
+#      emptyDir: {}
+
+resources: {}
+  # limits:
+  #   cpu: 1
+  #   memory: 1Gi
+  # requests:
+  #   cpu: 1
+  #   memory: 1Gi
+
+### Dynamic configuration - Used during 'helm install...' etc.
+# confFilePath:

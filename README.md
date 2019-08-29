@@ -29,9 +29,37 @@ export AEROSPIKE_TTL=0
 All `AEROSPIKE_*` parameters except AEROSPIKE\_NODES, AEROSPIKE_MEM are optional. Default values are listed above.
 All other parameters are required.
 
-### Storage: 
+### Configuring Storage:
 
-You can configure your own storage class or use/edit the provided `storageclass-gcp.yaml` or `storageclass-aws.yaml`.
+The [statefulset definition](manifests/statefulset.yaml) refers to a custom StorageClass `ssd`.
+You can find the storageclass `ssd` definition in [storageclass-aws.yaml](manifests/storageclass-aws.yaml) or [storageclass-gcp.yaml](manifests/storageclass-gcp.yaml) (Uncomment them to use). You can also define your own storageclass and use it within the statefulset definition.
+
+If you want to use the raw block volume mode, you need to define `volumeMode` as `Block` in the Volume Claim and use `volumeDevices` and `devicePath` instead of `volumeMounts` and `mountPath` as shown in the example below.
+
+```
+  volumeClaimTemplates:
+  - metadata:
+      name: data-dev
+      labels: *AerospikeDeploymentLabels
+    spec:
+      volumeMode: Block
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: ssd
+      resources:
+        requests:
+          storage: ${AEROSPIKE_MEM}Gi
+```
+```
+.....
+volumeMounts:
+        - name: confdir
+          mountPath: /etc/aerospike
+volumeDevices:
+        - name: data-dev
+          devicePath: /dev/sdb
+.....
+```
 
 For Kubernetes version > 1.11, there's a default storage class `gp2` available on AWS EKS clusters, uses `aws-ebs` provisioner and volume type `gp2`.
 

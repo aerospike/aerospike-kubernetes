@@ -21,7 +21,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "aerospike.fullname" . }}
-  namespace: {{ .Values.Namespace }}
+  namespace: {{ .Values.namespace }}
   labels: &AerospikeDeploymentLabels
     app: {{ template "aerospike.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
@@ -38,10 +38,10 @@ spec:
     metadata:
       labels: *AerospikeDeploymentLabels
     spec:
-      terminationGracePeriodSeconds: {{ .Values.TerminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       containers:
       - name: aerospike
-        image: "{{ .Values.Image.Repository }}:{{ .Values.Image.Tag }}"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         ports:
         - containerPort: 3000
           name: aero-clients
@@ -73,18 +73,39 @@ spec:
           periodSeconds: 10
         volumeMounts:
         - name: confdir
-          mountPath: {{ .Values.ConfigDir }}
-        - name: data-dev
-          mountPath: {{ .Values.DataDir }}
+          mountPath: /etc/aerospike
+        {{- range $pv := .Values.persistenceStorage }}
+        {{- if $pv.enabled }}
+        {{- if eq $pv.volumeMode "Filesystem"}}
+        - name: {{ $pv.name | quote }}
+          mountPath: {{ $pv.mountPath | quote }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- range $lv := .Values.volumes }}
+        - name: {{ $lv.name | quote }}
+          mountPath: {{ $lv.mountPath | quote }}
+        {{- end }}
+        volumeDevices:
+        {{- range $pv := .Values.persistenceStorage }}
+        {{- if $pv.enabled }}
+        {{- if eq $pv.volumeMode "Block"}}
+        - name: {{ $pv.name | quote }}
+          devicePath: {{ $pv.devicePath | quote }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
         env:
         - name: NAMESPACE
-          value: {{ .Values.AerospikeNamespace | quote }}
+          value: {{ .Values.aerospikeNamespace | quote }}
         - name: REPL_FACTOR
-          value: {{ .Values.AerospikeReplicationFactor | quote }}
+          value: {{ .Values.aerospikeReplicationFactor | quote }}
         - name: MEM_GB
-          value: {{ .Values.AerospikeNamespaceMemoryGB | quote }}
+          value: {{ .Values.aerospikeNamespaceMemoryGB | quote }}
         - name: DEFAULT_TTL
-          value: {{ .Values.AerospikeDefaultTTL | quote }}
+          value: {{ .Values.aerospikeDefaultTTL | quote }}
         # Downward API:
         - name: MY_POD_NAME
           valueFrom:
@@ -100,7 +121,7 @@ spec:
               fieldPath: status.podIP
       initContainers:
       - name: aerospike-init
-        image: "{{ .Values.ToolsImage.Repository }}:{{ .Values.ToolsImage.Tag }}"
+        image: "{{ .Values.toolsImage.repository }}:{{ .Values.toolsImage.tag }}"
         command: ["/bin/sh"]
         args: ["-c", "cp /configs/install.sh /install.sh && chmod +x /install.sh && /install.sh"]
         volumeMounts:
@@ -121,15 +142,26 @@ spec:
       - name: initconfigs
         configMap:
           name: {{ .Release.Name }}-conf
+      {{- range $lv := .Values.volumes }}
+      - name: {{ $lv.name | quote }}
+{{ toYaml $lv.template  | indent 8}}
+      {{- end }}
   volumeClaimTemplates:
-  - metadata:
-      name: data-dev
-      labels: *AerospikeDeploymentLabels
-    spec:
-      accessModes:
-        - ReadWriteOnce
-      storageClassName: {{ .Values.StorageClass }}
-      resources:
-        requests:
-          storage: {{ .Values.AerospikeNamespaceMemoryGB }}Gi
+    {{- range $pv := .Values.persistenceStorage }}
+    {{- if $pv.enabled }}
+    - metadata:
+        name: {{ $pv.name }}
+        labels: *AerospikeDeploymentLabels
+      spec:
+        volumeMode: {{ $pv.volumeMode }}
+        accessModes:
+          - {{ $pv.accessMode | quote }}
+      {{- if hasKey $pv "storageClass" }}
+        storageClassName: {{ $pv.storageClass | quote }}
+      {{- end }}
+        resources:
+          requests:
+            storage: {{ $pv.size | quote }}
+    {{- end }}
+    {{- end }}
 ---

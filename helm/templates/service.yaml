@@ -22,7 +22,7 @@ metadata:
   annotations:
     service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
   name: {{ template "aerospike.fullname" . }}
-  namespace: {{ .Values.Namespace }}
+  namespace: {{ .Values.namespace }}
   labels:
       app: {{ template "aerospike.name" . }}
       chart: {{ .Chart.Name }}-{{ .Chart.Version }}
