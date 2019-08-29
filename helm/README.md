@@ -1,26 +1,59 @@
-# Helm chart for Aerospike on Kubernetes
+# Helm chart for Aerospike (CE) on Kubernetes
 
 Implements a dynamically scalable Aerospike cluster using Kubernetes StatefulSets.
 
 
+## Pre Requisites
+
+- Kubernetes 1.8+
+
 ## Usage:
 
-1. Before installing the chart, copy all the files [config/](../configs/) directory to `files/` directory. These files are necessary to create configMap object.
-
-2. Install the chart.
+### Install the chart
 
 ```sh
-helm install --name aerospike ./
+helm install --name aerospike-release ./
 ```
 
-You can also set the configuration values as defined in `values.yaml` using `--set` option.
-For example, 
+You can also set the configuration values as defined in `values.yaml` using `--set` option or provide a `values.yaml` file during `helm install`.
+
+For example,
 
 ```sh
 helm install --set dBReplicas=5 --name aerospike-release ./
 ```
 
-### Output:
+### Apply your own aerospike.conf file or template
+
+To override the default `aerospike.template.conf`, set `confFilePath` to point to your own custom `aerospike.conf` file or template. Note that it should be a path on your machine where `helm` client is running. The custom `aerospike.conf` file or template must contain `# mesh-seed-placeholder` in `heartbeat` configuration to populate mesh configuration during peer discovery. For example,
+
+```
+....
+	heartbeat {
+
+        address any
+		mode mesh
+		port 3002
+
+		# mesh-seed-placeholder
+
+		interval 150
+		timeout 10
+	}
+.....
+```
+
+Use `confFilePath` during `helm install` with `--set-file` option.
+```
+helm install --name aerospike-release --set-file confFilePath=/tmp/aerospike_templates/aerospike.template.conf ./
+```
+
+### Storage configuration
+
+You can configure multiple volume mounts (filesystem type) or device mounts (raw block device) or both in `values.yaml`. Please check below [configuration section](#configuration) and `values.yaml` file in this repo for more details.
+
+
+### Test Output:
 
 ```sh
 NAME:   aerospike-release
@@ -52,7 +85,27 @@ NAME             	REVISION	UPDATED                 	STATUS  	CHART          	APP
 aerospike-release	1       	Tue Aug 27 15:40:36 2019	DEPLOYED	aerospike-1.0.0	4.6.0.2    	default  
 ```
 
-3. To package the chart,
+### Configuration
+
+| Parameter                          | Description                                                           | Default Value                |
+| -----------------------------------|:--------------------------------------------------------------------: |:----------------------------:|
+| `namespace`                        | Kubernetes Namespace                                                  |  `default`                   |
+| `dBReplicas`                       | Number of Aerospike nodes or pods in the cluster                      |   `1`                        |
+| `terminationGracePeriodSeconds`    | Wait time to forceful shutdown of a container                         |    `30`                      |
+| `image.repository`                 | Aerospike Server Docker Image                                         | `aerospike/aerospike-server` |
+| `image.tag`                        | Aerospike Server Docker Image Tag                                     | `4.6.0.2`                    |
+| `toolsImage.repository`            | Aerospike Tools Docker Image                                          | `aerospike/aerospike-tools`  |
+| `toolsImage.tag`                   | Aerospike Tools Docker Image Tag                                      | `3.21.1`                     |
+| `aerospikeNamespace`               | Aerospike Namespace name                                              | `test`                       |
+| `aerospikeNamespaceMemoryGB`       | Aerospike Namespace Memory in GB                                      | `1`                          |
+| `aerospikeReplicationFactor`       | Aerospike Namespace Replication Factor                                | `2`                          |
+| `aerospikeDefaultTTL`              | Aerospike Namespace Record default TTL                                | `30d` (days)                  |
+| `persistenceStorage`               | Define Peristent Volumes to be used (Map - to define multiple volumes)| `{}` (nil)                   |
+| `volumes`                          | Define volumes section and template to be used                        | `volume.mountPath: /opt/aerospike/data`,<br />`volume.name: datadir`,<br />`volume.template: emptyDir: {}`|
+| `resources`                        | Resource configuration (`requests` and `limits`)                      | `{}` (nil)                   |
+| `confFilePath`                     | Custom aerospike.conf file path on helm client machine (To be used during the runtime, `helm install` .. etc)| `not defined`|
+
+### To package the chart,
 
 ```sh
 helm package ./
