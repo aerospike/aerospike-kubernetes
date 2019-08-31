@@ -14,6 +14,7 @@ entries:
     sources:
     - https://github.com/aerospike/aerospike-server.docker
     - https://github.com/aerospike/aerospike-tools.docker
+    - https://github.com/aerospike/aerospike-kubernetes
     urls:
     - https://aerospike.github.io/aerospike-kubernetes/aerospike-community-1.0.0.tgz
     version: 1.0.0
