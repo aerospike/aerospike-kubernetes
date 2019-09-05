@@ -71,20 +71,23 @@ STATUS: DEPLOYED
 RESOURCES:
 ==> v1/ConfigMap
 NAME                    DATA  AGE
-aerospike-release-conf  3     2m10s
+aerospike-release-conf  3     5m36s
 
 ==> v1/Pod(related)
-NAME                 READY  STATUS    RESTARTS  AGE
-aerospike-release-0  1/1    Running   0         109s
-aerospike-release-1  0/1    Init:0/1  0         14s
+NAME                 READY  STATUS   RESTARTS  AGE
+aerospike-release-0  1/1    Running  0         5m15s
+aerospike-release-1  1/1    Running  0         3m40s
+aerospike-release-2  1/1    Running  0         2m41s
+aerospike-release-3  1/1    Running  0         2m6s
+aerospike-release-4  1/1    Running  0         97s
 
 ==> v1/Service
 NAME               TYPE       CLUSTER-IP  EXTERNAL-IP  PORT(S)   AGE
-aerospike-release  ClusterIP  None        <none>       3000/TCP  2m10s
+aerospike-release  ClusterIP  None        <none>       3000/TCP  5m36s
 
 ==> v1/StatefulSet
 NAME               READY  AGE
-aerospike-release  1/5    2m10s
+aerospike-release  5/5    5m36s
 ```
 
 ```sh
