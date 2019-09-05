@@ -9,10 +9,16 @@ Implements a dynamically scalable Aerospike cluster using Kubernetes StatefulSet
 
 ## Usage:
 
+### Add Aerospike repository
+
+```sh
+helm repo add aerospike https://aerospike.github.io/aerospike-kubernetes
+```
+
 ### Install the chart
 
 ```sh
-helm install --name aerospike-release ./
+helm install --name aerospike-release aerospike/aerospike
 ```
 
 You can also set the configuration values as defined in `values.yaml` using `--set` option or provide a `values.yaml` file during `helm install`.
@@ -20,7 +26,7 @@ You can also set the configuration values as defined in `values.yaml` using `--s
 For example,
 
 ```sh
-helm install --set dBReplicas=5 --name aerospike-release ./
+helm install --set dBReplicas=5 --name aerospike-release aerospike/aerospike
 ```
 
 ### Apply your own aerospike.conf file or template
@@ -47,7 +53,7 @@ helm install --set dBReplicas=5 --name aerospike-release ./
 
 - Use `confFilePath` during `helm install` with `--set-file` option.
 ```
-helm install --name aerospike-release --set-file confFilePath=/tmp/aerospike_templates/aerospike.template.conf ./
+helm install --name aerospike-release --set-file confFilePath=/tmp/aerospike_templates/aerospike.template.conf aerospike/aerospike
 ```
 
 ### Storage configuration
@@ -58,33 +64,36 @@ You can configure multiple volume mounts (filesystem type) or device mounts (raw
 ### Test Output:
 
 ```sh
-NAME:   aerospike-release
-LAST DEPLOYED: Tue Aug 27 15:40:36 2019
+LAST DEPLOYED: Thu Sep  5 21:51:57 2019
 NAMESPACE: default
 STATUS: DEPLOYED
 
 RESOURCES:
 ==> v1/ConfigMap
 NAME                    DATA  AGE
-aerospike-release-conf  3     0s
+aerospike-release-conf  3     5m36s
 
 ==> v1/Pod(related)
-NAME                 READY  STATUS    RESTARTS  AGE
-aerospike-release-0  0/1    Init:0/1  0         0s
+NAME                 READY  STATUS   RESTARTS  AGE
+aerospike-release-0  1/1    Running  0         5m15s
+aerospike-release-1  1/1    Running  0         3m40s
+aerospike-release-2  1/1    Running  0         2m41s
+aerospike-release-3  1/1    Running  0         2m6s
+aerospike-release-4  1/1    Running  0         97s
 
 ==> v1/Service
 NAME               TYPE       CLUSTER-IP  EXTERNAL-IP  PORT(S)   AGE
-aerospike-release  ClusterIP  None        <none>       3000/TCP  0s
+aerospike-release  ClusterIP  None        <none>       3000/TCP  5m36s
 
 ==> v1/StatefulSet
 NAME               READY  AGE
-aerospike-release  0/3    0s
+aerospike-release  5/5    5m36s
 ```
 
 ```sh
 $ helm list
 NAME             	REVISION	UPDATED                 	STATUS  	CHART          	APP VERSION	NAMESPACE
-aerospike-release	1       	Tue Aug 27 15:40:36 2019	DEPLOYED	aerospike-1.0.0	4.6.0.2    	default  
+aerospike-release	1       	Thu Sep  5 21:51:57 2019	DEPLOYED	aerospike-4.6.0	4.6.0.2    	default  
 ```
 
 ### Configuration
@@ -106,10 +115,3 @@ aerospike-release	1       	Tue Aug 27 15:40:36 2019	DEPLOYED	aerospike-1.0.0	4.6
 | `volumes`                          | Define volumes section and template to be used                        | `volume.mountPath: /opt/aerospike/data`,<br />`volume.name: datadir`,<br />`volume.template: emptyDir: {}`|
 | `resources`                        | Resource configuration (`requests` and `limits`)                      | `{}` (nil)                   |
 | `confFilePath`                     | Custom aerospike.conf file path on helm client machine (To be used during the runtime, `helm install` .. etc)| `not defined`|
-
-### To package the chart,
-
-```sh
-helm package ./
-```
-Note that the directory name and Chart name must match.
