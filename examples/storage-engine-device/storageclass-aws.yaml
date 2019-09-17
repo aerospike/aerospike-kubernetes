@@ -24,5 +24,5 @@
 # provisioner: kubernetes.io/aws-ebs
 # parameters:
 #   type: io1 ## Provisioned IOPS SSD
-#   encrypted: false
+#   encrypted: "false"
 # ---
