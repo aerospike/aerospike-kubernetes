@@ -1,7 +1,5 @@
-#
 # Provisioner ConfigMap
 #
-
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -25,8 +23,6 @@ data:
 
 # Daemonset
 # Local volume Provisioner 
-#
-
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -79,10 +75,8 @@ spec:
             path: /mnt/disks
 ---
 
-#
 # Storage Class 'aerospike-ssds'
-# 
-
+#
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -97,10 +91,8 @@ reclaimPolicy: Delete
 
 ---
 
-#
 # Provisioner Service Account
 #
-
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -113,10 +105,8 @@ metadata:
 
 ---
 
-#
 # Provisioner Cluster Role Binding
 #
-
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:

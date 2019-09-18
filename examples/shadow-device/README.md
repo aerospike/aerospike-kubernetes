@@ -20,16 +20,17 @@ This example includes:
 
 Let's get started.
 
-**In this example, we will set and use the Kubernetes `namespace` as `dev` and `app` name as `aerospike-test`.**
+In this example, we will set and use the Kubernetes `namespace` as `dev` and `app` name as `aerospike-test`.
 
 ### Create namespace `dev`
 
 The namespace definition is present in [namespace.yaml](namespace.yaml)
 ```sh
-kubectl create -f namespace.yaml
+$ kubectl create -f namespace.yaml
 ```
 ```sh
-kubectl get namespaces
+$ kubectl get namespaces
+
 NAME          STATUS   AGE
 default       Active   10d
 dev           Active   6s
@@ -44,35 +45,37 @@ Before deploying local volume provisioner, create a discovery directory on each 
 In this example, there are two local SSDs (identified as `/dev/sdb` and `/dev/sdc`) attached to each worker node (we have two worker nodes in this example) which can be used for the Aerospike Cluster deployment.
 
 ```
-lsblk 
+$ lsblk
 NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
 sdb       8:16   0  375G  0 disk 
 sdc       8:32   0  375G  0 disk
 ```
 
 ```sh
-mkdir /mnt/disks
+$ mkdir /mnt/disks
 ```
 
 Use unique device IDs rather than the names `/dev/sdb` or `/dev/sdc`.
 
 ```sh
-ln -s /dev/disk/by-id/local-ssd-0 /mnt/disks
-ln -s /dev/disk/by-id/local-ssd-1 /mnt/disks
+$ ln -s /dev/disk/by-id/local-ssd-0 /mnt/disks
+$ ln -s /dev/disk/by-id/local-ssd-1 /mnt/disks
 ```
 
-> You can use your own discovery directory, but make sure that the [provisioner](aerospike-local-volume-provisioner.yaml) is also configured to point to the same directory.
+> Note : <br /> You can also use your own discovery directory, but make sure that the [provisioner](aerospike-local-volume-provisioner.yaml) is also configured to point to the same directory.
 
 ### Configure and deploy local volume provisioner
 
-To automate the local volume provisioning, we will create and run a local volume provisioner based on [kubernetes-sigs/sig-storage-local-static-provisioner](https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner). 
+To automate the local volume provisioning, we will create and run a provisioner based on [kubernetes-sigs/sig-storage-local-static-provisioner](https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner). 
 
 The provisioner will run as a `DaemonSet` which will manage the local SSDs on each node based on a discovery directory, create/delete the PersistentVolumes and clean up the storage when it is released.
 
-The local volume static provisioner for this example is defined in [aerospike-local-volume-provisioner.yaml](aerospike-local-volume-provisioner.yaml). Each specifications is highlighted with comments in the same file.
+The local volume static provisioner for this example is defined in [aerospike-local-volume-provisioner.yaml](aerospike-local-volume-provisioner.yaml). Each specification is highlighted with comments in the same file.
+
+Deploy the provisioner,
 
 ```sh
-kubectl create -f aerospike-local-volume-provisioner.yaml
+$ kubectl create -f aerospike-local-volume-provisioner.yaml
 
 configmap/local-provisioner-config created
 daemonset.apps/local-volume-provisioner created
@@ -85,7 +88,7 @@ clusterrolebinding.rbac.authorization.k8s.io/local-storage-provisioner-node-bind
 
 Verify the discovered and created PV objects,
 ```sh
-kubectl get pv
+$ kubectl get pv
 
 NAME                CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM   STORAGECLASS     REASON   AGE
 local-pv-342b45ed   375Gi      RWO            Delete           Available           aerospike-ssds            3s
@@ -103,7 +106,7 @@ Define a `storageClass` for provisioning of 'shadow device' persistent disks. Ku
 For this example, we will create a StorageClass `shadow` which uses `gce-pd` provisioner (since this setup is running on GKE) and specify the parameters as `type: pd-ssd` (volume type). Please check [storageclass-gcp.yaml](storageclass-gcp.yaml)
 
 ```sh
-kubectl create -f storageclass-gcp.yaml
+$ kubectl create -f storageclass-gcp.yaml
 ```
 
 ### Create and deploy ConfigMap object
@@ -113,12 +116,12 @@ Copy [on-start.sh](../../configs/on-start.sh) and [install.sh](../../configs/ins
 Create configMap object,
 
 ```sh
-kubectl create configmap aerospike-conf -n dev --from-file=configmap/
+$ kubectl create configmap aerospike-conf -n dev --from-file=configmap/
 ```
 
-> For this example, we are configuring only a single Aerospike Namespace with data storage on a single raw block volume with a shadow device. If you prefer to use multiple namespaces, please use a custom aerospike.conf file template accordingly.
+> Note : <br /> For this example, we will configure only a single Aerospike Namespace with data storage on a single raw block volume with a shadow device. If you prefer to use multiple namespaces, please use a custom aerospike.conf file or template accordingly.
 
-Note that `storage-engine` configuration in `aerospike.template.conf` refers to a primary block device `/dev/xvdb` and a secondary 'shadow device' `/dev/xvdf`. You can also use multiple raw devices in the storage-engine configuration, but make sure that each of them have a corresponding PVC through `volumeClaimTemplates` in the statefulset definition.
+Note that `storage-engine` configuration in `aerospike.template.conf` is using a primary block device `/dev/xvdb` and a secondary 'shadow device' `/dev/xvdf`. You can also use multiple raw devices in the storage-engine configuration, but make sure that each of them have a corresponding PVC through `volumeClaimTemplates` in the statefulset definition (Check [Things to note](#things-to-note) section).
 ```
 ...
 	storage-engine device {
@@ -135,7 +138,7 @@ Note that `storage-engine` configuration in `aerospike.template.conf` refers to 
 For this example, we will use the Service defined in [service.yaml](service.yaml)
 
 ```sh
-kubectl create -f service.yaml
+$ kubectl create -f service.yaml
 ```
 
 
@@ -161,15 +164,17 @@ AEROSPIKE_TTL=0
 Substitute the above variables into the `statefulset-shadow-device.yaml` and deploy.
 
 ```sh
-cat statefulset-shadow-device.yaml | envsubst '$AEROSPIKE_NODES $AEROSPIKE_NAMESPACE $AEROSPIKE_REPL $AEROSPIKE_MEM $AEROSPIKE_TTL $AEROSPIKE_STORAGE_SZ' > statefulset.yaml
+$ cat statefulset-shadow-device.yaml | envsubst '$AEROSPIKE_NODES $AEROSPIKE_NAMESPACE $AEROSPIKE_REPL $AEROSPIKE_MEM $AEROSPIKE_TTL $AEROSPIKE_STORAGE_SZ' > statefulset.yaml
 ```
+Deploy,
+
 ```sh
-kubectl create -f statefulset.yaml
+$ kubectl create -f statefulset.yaml
 ```
 
 #### Things to note:
 
-- The `volumeClaimTemplates` is used to request PV resource from the deployed provisioner via `storageClassName` which is referring to `aerospike-ssds`. The `volumeMode` is set to `Block` (Block device mode). For the shadow device volumes, we will be using the `shadow` storageClass created in [Provisioning shadow device volumes](#provisioning-shadow-device-volumes).
+- The `volumeClaimTemplates` is used to request PV resource from the deployed provisioner via storageClass `aerospike-ssds`. The `volumeMode` is set to `Block` (Block device mode). For the shadow device volumes, we will be using the storageClass `shadow` created in [Provisioning shadow device volumes](#provisioning-shadow-device-volumes).
     ```sh
     ......
     volumeClaimTemplates:
@@ -211,7 +216,7 @@ kubectl create -f statefulset.yaml
 
 
 ```sh
-kubectl get pv
+$ kubectl get pv
 
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM                        STORAGECLASS     REASON   AGE
 local-pv-342b45ed                          375Gi      RWO            Delete           Available                                aerospike-ssds            6m56s
@@ -234,7 +239,7 @@ Sep 18 2019 16:20:29 GMT: INFO (info): (ticker.c:162) NODE-ID bb9fe910a5d3186 CL
 ```
 
 ```sh
-kubectl get all --namespace dev
+$ kubectl get all --namespace dev
 
 NAME                                 READY   STATUS    RESTARTS   AGE
 pod/aerospike-0                      1/1     Running   0          21m
