@@ -27,7 +27,7 @@ terminationGracePeriodSeconds: 30
 ### Aerospike server Community docker image
 image:
   repository: aerospike/aerospike-server
-  tag: 4.6.0.2
+  tag: 4.6.0.4
 
 ### Aerospike tools docker image
 toolsImage:

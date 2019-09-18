@@ -104,7 +104,7 @@ aerospike-release	1       	Thu Sep  5 21:51:57 2019	DEPLOYED	aerospike-4.6.0	4.6
 | `dBReplicas`                       | Number of Aerospike nodes or pods in the cluster                      |   `1`                        |
 | `terminationGracePeriodSeconds`    | Wait time to forceful shutdown of a container                         |    `30`                      |
 | `image.repository`                 | Aerospike Server Docker Image                                         | `aerospike/aerospike-server` |
-| `image.tag`                        | Aerospike Server Docker Image Tag                                     | `4.6.0.2`                    |
+| `image.tag`                        | Aerospike Server Docker Image Tag                                     | `4.6.0.4`                    |
 | `toolsImage.repository`            | Aerospike Tools Docker Image                                          | `aerospike/aerospike-tools`  |
 | `toolsImage.tag`                   | Aerospike Tools Docker Image Tag                                      | `3.21.1`                     |
 | `aerospikeNamespace`               | Aerospike Namespace name                                              | `test`                       |
@@ -115,3 +115,7 @@ aerospike-release	1       	Thu Sep  5 21:51:57 2019	DEPLOYED	aerospike-4.6.0	4.6
 | `volumes`                          | Define volumes section and template to be used                        | `volume.mountPath: /opt/aerospike/data`,<br />`volume.name: datadir`,<br />`volume.template: emptyDir: {}`|
 | `resources`                        | Resource configuration (`requests` and `limits`)                      | `{}` (nil)                   |
 | `confFilePath`                     | Custom aerospike.conf file path on helm client machine (To be used during the runtime, `helm install` .. etc)| `not defined`|
+
+Note that the namespace related configurations (`aerospikeNamespace`, `aerospikeNamespaceMemoryGB`, `aerospikeReplicationFactor` and `aerospikeDefaultTTL`) are intended for default single namespace configuration. 
+
+If using multiple namespaces, these config items can be ignored and a separate `aerospike.conf` file or template with multiple namespace configuration can be used.

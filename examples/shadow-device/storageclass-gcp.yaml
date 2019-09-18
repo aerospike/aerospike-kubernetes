@@ -15,16 +15,11 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-apiVersion: v1
-kind: PersistentVolumeClaim
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
 metadata:
-  name: local-ssd-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  volumeMode: Block
-  storageClassName: aerospike-ssd
-  resources:
-    requests:
-      storage: 75Gi
+ name: shadow
+provisioner: kubernetes.io/gce-pd
+parameters:
+ type: pd-ssd
 ---

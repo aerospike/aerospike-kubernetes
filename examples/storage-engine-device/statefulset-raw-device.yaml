@@ -19,14 +19,14 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: aerospike
-  namespace: $NAMESPACE
+  namespace: dev
   labels: &AerospikeDeploymentLabels
-    app: $APP_NAME
+    app: aerospike-test
 spec:
   serviceName: aerospike
   selector:
     matchLabels:
-      app: $APP_NAME
+      app: aerospike-test
   replicas: $AEROSPIKE_NODES
   template:
     metadata:
@@ -70,7 +70,7 @@ spec:
           mountPath: /etc/aerospike
         volumeDevices:
         - name: data-dev
-          devicePath: /dev/sdb
+          devicePath: /dev/xvdb
         env:
         - name: NAMESPACE
           value: "$AEROSPIKE_NAMESPACE"
@@ -124,8 +124,8 @@ spec:
       volumeMode: Block
       accessModes:
         - ReadWriteOnce
-      storageClassName: ssd
+      storageClassName: aerospike-ssds
       resources:
         requests:
-          storage: ${AEROSPIKE_MEM}Gi
+          storage: ${AEROSPIKE_STORAGE_SZ}Gi
 ---
