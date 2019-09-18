@@ -15,16 +15,9 @@
 # the License.
 # ------------------------------------------------------------------------------
 
+# Namespace
 apiVersion: v1
-kind: PersistentVolumeClaim
+kind: Namespace
 metadata:
-  name: local-ssd-claim
-spec:
-  accessModes:
-    - ReadWriteOnce
-  volumeMode: Block
-  storageClassName: aerospike-ssd
-  resources:
-    requests:
-      storage: 75Gi
+  name: dev
 ---

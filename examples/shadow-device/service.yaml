@@ -15,26 +15,23 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-kind: PersistentVolume
+# Headless service to provide DNS lookup
 apiVersion: v1
+kind: Service
 metadata:
-  name: shadow-device
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+  name: aerospike
+  namespace: dev
+  labels:
+      app: aerospike-test
 spec:
-  volumeMode: Block
-  capacity:
-    storage: 75Gi
-  local:
-    path: /dev/nvme2n1
-  accessModes:
-    - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
-  storageClassName: aerospike-ssd
-  nodeAffinity:
-    required:
-      nodeSelectorTerms:
-      - matchExpressions:
-        - key: kubernetes.io/hostname
-          operator: In
-          values:
-          - aerospike-node-1
+  publishNotReadyAddresses: true
+  ports:
+  - port: 3000
+    name: aerospike-client
+  # *.aerospike.default.svc.cluster.local
+  clusterIP: None
+  selector:
+    app: aerospike-test
 ---

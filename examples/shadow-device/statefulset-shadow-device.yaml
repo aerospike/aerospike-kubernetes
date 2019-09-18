@@ -19,15 +19,15 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: aerospike
-  namespace: $NAMESPACE
+  namespace: dev
   labels: &AerospikeDeploymentLabels
-    app: $APP_NAME
+    app: aerospike-test
 spec:
   serviceName: aerospike
   selector:
     matchLabels:
-      app: $APP_NAME
-  replicas: 1
+      app: aerospike-test
+  replicas: $AEROSPIKE_NODES
   template:
     metadata:
       labels: *AerospikeDeploymentLabels
@@ -70,9 +70,9 @@ spec:
           mountPath: /etc/aerospike
         volumeDevices:
         - name: data-dev
-          devicePath: /dev/sda
+          devicePath: /dev/xvdb
         - name: shadow-dev
-          devicePath: /dev/sdb
+          devicePath: /dev/xvdf
         env:
         - name: NAMESPACE
           value: "$AEROSPIKE_NAMESPACE"
@@ -118,28 +118,27 @@ spec:
       - name: initconfigs
         configMap:
           name: aerospike-conf
-      - name: data-dev
-        persistentVolumeClaim:
-          claimName: local-ssd-claim
-      - name: shadow-dev
-        persistentVolumeClaim:
-          claimName: shadow-device-claim
+  volumeClaimTemplates:
+  - metadata:
+      name: data-dev
+      labels: *AerospikeDeploymentLabels
+    spec:
+      volumeMode: Block
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: aerospike-ssds
+      resources:
+        requests:
+          storage: ${AEROSPIKE_STORAGE_SZ}Gi
+  - metadata:
+      name: shadow-dev
+      labels: *AerospikeDeploymentLabels
+    spec:
+      volumeMode: Block
+      accessModes:
+        - ReadWriteOnce
+      storageClassName: shadow
+      resources:
+        requests:
+          storage: ${AEROSPIKE_STORAGE_SZ}Gi
 ---
-
-###
-### 'volumeClaimTemplates' can be used for shadow device claim. For example, using 'aws-ebs' provisioner (dynamic provisioning)
-### Note that dynamic provisioning for local volumes are not supported yet.
-###
-### volumeClaimTemplates:
-### - metadata:
-###     name: shadow-dev
-###     labels: *AerospikeDeploymentLabels
-###   spec:
-###     volumeMode: Block
-###     accessModes:
-###       - ReadWriteOnce
-###     storageClassName: gp2
-###     resources:
-###       requests:
-###         storage: 75Gi
-###
