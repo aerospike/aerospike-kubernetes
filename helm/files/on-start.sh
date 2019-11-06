@@ -26,6 +26,51 @@ set -e
 set -x
 CFG=/etc/aerospike/aerospike.template.conf
 
+# Auto generate Node IDs and add to config
+if [ "$AUTO_GENERATE_NODE_IDS" = true ]
+then
+    if ! grep -q "node-id" ${CFG}
+    then
+        INDEX=${POD_NAME##*-}
+        sed -i "/service[[:blank:]]*{/{p;s/.*/1/;H;g;/^\(\n1\)\{1\}$/s//\tnode-id a$INDEX/p;d}" ${CFG}
+    else
+        printf "AUTO_GENERATE_NODE_IDS is true but node-id is already configured! \n"
+    fi
+fi
+
+# For GKE/EKS assign external IP to alternate-access-address
+# if hostnetworking is enabled
+if [ "$HOST_NETWORK" = true ]
+then
+	apt-get update -y
+	apt-get install curl -y
+	if [ "$PLATFORM" = "gke" ]
+	then
+		ret=$(curl --write-out "%{http_code}\n" --silent --output /dev/null -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
+		if [ $ret = 200 ]
+        then
+            EXT_IP=$(curl -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
+            if [ ! -z $EXT_IP ] && [ "$EXT_IP" != "" ]
+			then
+				echo "External IP:$EXT_IP"
+               	sed -i "/service[[:blank:]]*{/{p;s/.*/1/;H;g;/^\(\n1\)\{2\}$/s//\t\talternate-access-address ${EXT_IP}/p;d}" ${CFG}
+			fi
+        fi
+	elif [ "$PLATFORM" = "eks" ]
+	then
+		ret=$(curl --write-out "%{http_code}\n" --silent --output /dev/null http://169.254.169.254/latest/meta-data/public-ipv4)
+		if [ $ret = 200 ]
+		then 
+			EXT_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
+			if [ ! -z $EXT_IP ] && [ "$EXT_IP" != "" ]
+            then
+                echo "External IP: $EXT_IP"
+                sed -i "/service[[:blank:]]*{/{p;s/.*/1/;H;g;/^\(\n1\)\{2\}$/s//\t\talternate-access-address ${EXT_IP}/p;d}" ${CFG}
+            fi
+		fi
+	fi
+fi
+
 function join {
     local IFS="$1"; shift; echo "$*";
 }

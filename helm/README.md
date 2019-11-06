@@ -26,7 +26,7 @@ You can also set the configuration values as defined in `values.yaml` using `--s
 For example,
 
 ```sh
-helm install --set dBReplicas=5 --name aerospike-release aerospike/aerospike
+helm install --set dbReplicas=5 --name aerospike-release aerospike/aerospike
 ```
 
 ### Apply your own aerospike.conf file or template
@@ -101,16 +101,22 @@ aerospike-release	1       	Thu Sep  5 21:51:57 2019	DEPLOYED	aerospike-4.6.0	4.6
 | Parameter                          | Description                                                           | Default Value                |
 | -----------------------------------|:--------------------------------------------------------------------: |:----------------------------:|
 | `namespace`                        | Kubernetes Namespace                                                  |  `default`                   |
-| `dBReplicas`                       | Number of Aerospike nodes or pods in the cluster                      |   `1`                        |
-| `terminationGracePeriodSeconds`    | Wait time to forceful shutdown of a container                         |    `30`                      |
+| `dbReplicas`                       | Number of Aerospike nodes or pods in the cluster                      |   `3`                        |
+| `terminationGracePeriodSeconds`    | Wait time to forceful shutdown of a container                         |   `120`                      |
 | `image.repository`                 | Aerospike Server Docker Image                                         | `aerospike/aerospike-server` |
-| `image.tag`                        | Aerospike Server Docker Image Tag                                     | `4.6.0.4`                    |
+| `image.tag`                        | Aerospike Server Docker Image Tag                                     | `4.7.0.2`                    |
 | `toolsImage.repository`            | Aerospike Tools Docker Image                                          | `aerospike/aerospike-tools`  |
-| `toolsImage.tag`                   | Aerospike Tools Docker Image Tag                                      | `3.21.1`                     |
+| `toolsImage.tag`                   | Aerospike Tools Docker Image Tag                                      | `3.22.0`                     |
 | `aerospikeNamespace`               | Aerospike Namespace name                                              | `test`                       |
 | `aerospikeNamespaceMemoryGB`       | Aerospike Namespace Memory in GB                                      | `1`                          |
 | `aerospikeReplicationFactor`       | Aerospike Namespace Replication Factor                                | `2`                          |
-| `aerospikeDefaultTTL`              | Aerospike Namespace Record default TTL                                | `30d` (days)                  |
+| `aerospikeDefaultTTL`              | Aerospike Namespace Record default TTL                                | `0` (Never Expire)                 |
+| `autoRolloutConfig`		   	     | Rollout ConfigMap/Secrets changes on 'helm upgrade'    			     | `false`					   	|
+| `hostNetworking`		 			 | Enable `hostNetwork`. Allows Pods to access host network.			 	 | `false`					   	|
+| `platform`		 				 | Set platform. Use with `hostNetworking` configuration to enable client applications outside the network to connect to Aerospike Cluster. Supported values - `eks` or `gke` or `none`    		 | `none`					   	|
+| `antiAffinity`		 			 | Enable `PodAntiAffinity` rule to schedule one pod per node. Supported values - `off`, `soft`, `hard` | `off` |
+| `antiAffinityWeight`		 		 | 'weight' in range 1-100 for "soft" antiAffinity option    			 | `1`					   		|
+| `affinity`		 				 | Define custom `nodeAffinity`/`podAffinity`/`podAntiAffinity` rules	 | `{}` (nil)				   	|
 | `persistenceStorage`               | Define Peristent Volumes to be used (Map - to define multiple volumes)| `{}` (nil)                   |
 | `volumes`                          | Define volumes section and template to be used                        | `volume.mountPath: /opt/aerospike/data`,<br />`volume.name: datadir`,<br />`volume.template: emptyDir: {}`|
 | `resources`                        | Resource configuration (`requests` and `limits`)                      | `{}` (nil)                   |
