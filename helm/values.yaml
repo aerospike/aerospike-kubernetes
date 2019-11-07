@@ -21,26 +21,55 @@
 
 ### Statefulset and K8s config variables
 namespace: default
-dBReplicas: 1 # Also controles number of nodes in the cluster.
-terminationGracePeriodSeconds: 30
+dbReplicas: 3 # Also controles number of nodes in the cluster.
+terminationGracePeriodSeconds: 120
 
 ### Aerospike server Community docker image
 image:
   repository: aerospike/aerospike-server
-  tag: 4.6.0.4
+  tag: 4.7.0.2
 
 ### Aerospike tools docker image
 toolsImage:
   repository: aerospike/aerospike-tools
-  tag: 3.21.1
+  tag: 3.22.0
 
-### Aerospike Configuration env variables
+### Aerospike Deployment configurations
+autoGenerateNodeIds: false
+
 aerospikeNamespace: "test"
 aerospikeNamespaceMemoryGB: "1"
 aerospikeReplicationFactor: "2"
-aerospikeDefaultTTL: ""
+aerospikeDefaultTTL: "0"
 
 ### Deployment specific configurations
+
+# Rollout ConfigMap/Secrets changes on 'helm upgrade'
+# Alternatively, use 'kubectl rollout restart'
+autoRolloutConfig: false
+
+# HostNetworking and Platform
+# Platform can be set to "eks", "gke", or "none"
+# With 'platform' set and 'hostNetworking' enabled, client applications from outside the network can connect to Aerospike Cluster.
+hostNetworking: false
+platform: none
+
+# Affinity / AntiAffinity configurations
+# Setting 'antiAffinity' option will prevent two pods of the same release be scheduled on the same node.
+# 'antiAffinity' levels can be "off" (not set), "soft" (preferredDuringSchedulingIgnoredDuringExecution) and "hard" (requiredDuringSchedulingIgnoredDuringExecution)
+# Set a desired 'antiAffinityWeight' in range 1-100 for "soft" antiAffinity option.
+# 'affinity' option can be used to defined any custom nodeAffinity/podAffinity/podAntiAffinity rules.
+antiAffinity: "off"
+antiAffinityWeight: 1
+affinity: {}
+  # nodeAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     nodeSelectorTerms:
+  #     - matchExpressions:
+  #       - key: kubernetes.io/hostname
+  #         operator: In
+  #         values:
+  #         - gke-gke-blr-default-pool-06a23412-0dkt
 
 persistenceStorage: {}
 #  - mountPath: /opt/aerospike/data
@@ -76,6 +105,7 @@ resources: {}
   # requests:
   #   cpu: 1
   #   memory: 1Gi
+
 
 ### Dynamic configuration - Used during 'helm install...' etc.
 # confFilePath:
