@@ -48,14 +48,14 @@ then
 	then
 		ret=$(curl --write-out "%{http_code}\n" --silent --output /dev/null -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
 		if [ $ret = 200 ]
-        then
-            EXT_IP=$(curl -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
-            if [ ! -z $EXT_IP ] && [ "$EXT_IP" != "" ]
+		then
+			EXT_IP=$(curl -H "Metadata-Flavor: Google" http://169.254.169.254/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip)
+			if [ ! -z $EXT_IP ] && [ "$EXT_IP" != "" ]
 			then
 				echo "External IP:$EXT_IP"
-               	sed -i "/service[[:blank:]]*{/{p;s/.*/1/;H;g;/^\(\n1\)\{2\}$/s//\t\talternate-access-address ${EXT_IP}/p;d}" ${CFG}
+				sed -i "/service[[:blank:]]*{/{p;s/.*/1/;H;g;/^\(\n1\)\{2\}$/s//\t\talternate-access-address ${EXT_IP}/p;d}" ${CFG}
 			fi
-        fi
+		fi
 	elif [ "$PLATFORM" = "eks" ]
 	then
 		ret=$(curl --write-out "%{http_code}\n" --silent --output /dev/null http://169.254.169.254/latest/meta-data/public-ipv4)
@@ -63,10 +63,10 @@ then
 		then 
 			EXT_IP=$(curl http://169.254.169.254/latest/meta-data/public-ipv4)
 			if [ ! -z $EXT_IP ] && [ "$EXT_IP" != "" ]
-            then
-                echo "External IP: $EXT_IP"
-                sed -i "/service[[:blank:]]*{/{p;s/.*/1/;H;g;/^\(\n1\)\{2\}$/s//\t\talternate-access-address ${EXT_IP}/p;d}" ${CFG}
-            fi
+			then
+				echo "External IP: $EXT_IP"
+				sed -i "/service[[:blank:]]*{/{p;s/.*/1/;H;g;/^\(\n1\)\{2\}$/s//\t\talternate-access-address ${EXT_IP}/p;d}" ${CFG}
+			fi
 		fi
 	fi
 fi
