@@ -96,6 +96,30 @@ NAME             	REVISION	UPDATED                 	STATUS  	CHART          	APP
 aerospike-release	1       	Thu Sep  5 21:51:57 2019	DEPLOYED	aerospike-4.6.0	4.6.0.2    	default  
 ```
 
+### Expose Aerospike Cluster
+
+Aerospike Cluster can be exposed to client applications outside the K8s network by enabling `host networking`.
+With host networking enabled, pods will be able to access the node's network. Pod IP will be same as node IP. 
+
+> With host networking enabled, the deployment will be limited to one pod per node. If the new pod is scheduled onto the same node, it will fail due to no free ports.
+
+Use `platform` and `hostNetworking` options to completely expose the Aerospike cluster pods to external client applications.
+
+For example,
+
+```
+helm install --set dbReplicas=4 \
+	         --name aerospike-release aerospike/aerospike \
+			 --set hostNetworking=true \
+			 --set platform=gke
+```
+
+Client applications can connect to the Aerospike cluster using instance's external IP (if available). The external IP (if available) of the instance on which the pod is scheduled will be set as [`alternate-access-address`](https://www.aerospike.com/docs/reference/configuration/index.html#alternate-access-address) in its `aerospike.conf`.
+
+```
+asadm -h <ExternalIP> -p 3000 --services-alternate
+```
+
 ### Configuration
 
 | Parameter                          | Description                                                           | Default Value                |
@@ -104,7 +128,7 @@ aerospike-release	1       	Thu Sep  5 21:51:57 2019	DEPLOYED	aerospike-4.6.0	4.6
 | `dbReplicas`                       | Number of Aerospike nodes or pods in the cluster                      |   `3`                        |
 | `terminationGracePeriodSeconds`    | Wait time to forceful shutdown of a container                         |   `120`                      |
 | `image.repository`                 | Aerospike Server Docker Image                                         | `aerospike/aerospike-server` |
-| `image.tag`                        | Aerospike Server Docker Image Tag                                     | `4.7.0.2`                    |
+| `image.tag`                        | Aerospike Server Docker Image Tag                                     | `4.7.0.3`                    |
 | `toolsImage.repository`            | Aerospike Tools Docker Image                                          | `aerospike/aerospike-tools`  |
 | `toolsImage.tag`                   | Aerospike Tools Docker Image Tag                                      | `3.22.0`                     |
 | `aerospikeNamespace`               | Aerospike Namespace name                                              | `test`                       |
@@ -113,7 +137,7 @@ aerospike-release	1       	Thu Sep  5 21:51:57 2019	DEPLOYED	aerospike-4.6.0	4.6
 | `aerospikeDefaultTTL`              | Aerospike Namespace Record default TTL                                | `0` (Never Expire)                 |
 | `autoRolloutConfig`		   	     | Rollout ConfigMap/Secrets changes on 'helm upgrade'    			     | `false`					   	|
 | `hostNetworking`		 			 | Enable `hostNetwork`. Allows Pods to access host network.			 	 | `false`					   	|
-| `platform`		 				 | Set platform. Use with `hostNetworking` configuration to enable client applications outside the network to connect to Aerospike Cluster. Supported values - `eks` or `gke` or `none`    		 | `none`					   	|
+| `platform`		 				 | Set platform. Use with `hostNetworking` configuration to enable client applications outside the network to connect to Aerospike Cluster. Supported values - `eks` (AWS) or `gke` (GCP) or `none`    		 | `none`					   	|
 | `antiAffinity`		 			 | Enable `PodAntiAffinity` rule to schedule one pod per node. Supported values - `off`, `soft`, `hard` | `off` |
 | `antiAffinityWeight`		 		 | 'weight' in range 1-100 for "soft" antiAffinity option    			 | `1`					   		|
 | `affinity`		 				 | Define custom `nodeAffinity`/`podAffinity`/`podAntiAffinity` rules	 | `{}` (nil)				   	|
