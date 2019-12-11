@@ -2,13 +2,17 @@
 
 This file documents all notable changes to Aerospike Helm Chart.
 
-## [1.0.1]
+## [1.1.0](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.1.0)
+- Update Chart `4.7.0` to use Aerospike Server version `4.7.0.5` (appVersion).
+- Update Chart `4.6.0` to use Aerospike Server version `4.6.0.8` (appVersion).
+
+## [1.0.1](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.0.1)
 - Update Chart `4.7.0` to use Aerospike Server versions `4.7.0.3` (appVersion).
 - Update Chart `4.6.0` to use Aerospike Server version `4.6.0.6` (appVersion).
 - Added 'Expose Aerospike Cluster' section to README.
 - Added CHANGELOG.md
 
-## [1.0.0]
+## [1.0.0](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.0.0)
 
 - Supports `NodeAffinity`/`PodAffinity`/`PodAntiAffinity` rules.
    - Set `antiAffinity` to ensure one Pod per Node (for a release).
