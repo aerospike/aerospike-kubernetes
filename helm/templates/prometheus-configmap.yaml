@@ -1,0 +1,78 @@
+# ------------------------------------------------------------------------------
+# Copyright 2012-2020 Aerospike, Inc.
+#
+# Portions may be licensed to Aerospike, Inc. under one or more contributor
+# license agreements.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
+# ------------------------------------------------------------------------------
+
+{{- if .Values.enableAerospikeMonitoring }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-prometheus-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "aerospike.name" . }}-prometheus
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    app.kubernetes.io/component: prometheus
+data:
+  prometheus.yaml: |-
+    global:
+      scrape_interval:     15s
+      evaluation_interval: 15s
+
+    alerting:
+      alertmanagers:
+      - scheme: http
+        static_configs:
+        - targets:
+            - "{{ .Release.Name }}-alertmanager:{{ .Values.alertmanager.webPort | default 9093 }}"
+
+    rule_files:
+      - "/etc/prometheus/aerospike_rules.yaml"
+
+    scrape_configs:
+      - job_name: 'aerospike'
+
+        kubernetes_sd_configs:
+        - role: endpoints
+          namespaces:
+            names:
+            - {{ .Release.Namespace }}
+        relabel_configs:
+        - source_labels: [__meta_kubernetes_service_label_app]
+          separator: ;
+          regex: {{ template "aerospike.name" . }}
+          replacement: $1
+          action: keep
+        - source_labels: [__meta_kubernetes_endpoint_port_name]
+          separator: ;
+          regex: aerospike-prometheus-exporter
+          replacement: $1
+          action: keep
+        - source_labels: [__meta_kubernetes_namespace]
+          separator: ;
+          regex: {{ .Release.Namespace }}
+          target_label: namespace
+          replacement: $1
+          action: replace
+
+  {{ if .Files.Get "files/aerospike_rules.yaml" }}
+  aerospike_rules.yaml: {{ tpl (.Files.Get "files/aerospike_rules.yaml") . | quote }}
+  {{ end }}
+  {{ if (.Values.prometheus.aerospikeAlertRulesFilePath) }}
+  aerospike_rules.yaml: |-
+    {{ .Values.prometheus.aerospikeAlertRulesFilePath | nindent 4 | trim }}
+  {{ end }}
+{{- end }}

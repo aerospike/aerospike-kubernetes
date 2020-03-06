@@ -1,0 +1,118 @@
+# ------------------------------------------------------------------------------
+# Copyright 2012-2020 Aerospike, Inc.
+#
+# Portions may be licensed to Aerospike, Inc. under one or more contributor
+# license agreements.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
+# ------------------------------------------------------------------------------
+
+{{- if .Values.enableAerospikeMonitoring }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-alertmanager
+  labels: &Labels
+    app: {{ template "aerospike.name" . }}-alertmanager
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    app.kubernetes.io/component: alertmanager
+spec:
+  serviceName: {{ .Release.Name }}-alertmanager-operated
+  replicas: {{ .Values.alertmanager.replicas }}
+  podManagementPolicy: {{ .Values.alertmanager.podManagementPolicy }}
+  updateStrategy:
+    type: {{ .Values.alertmanager.updateStrategy.type }}
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels: *Labels
+  template:
+    metadata:
+      labels: *Labels
+      annotations:
+        {{- if .Values.autoRolloutConfig }}
+        # TODO: Add an entry for secrets when used in future
+        checksum/config: {{ include (print $.Template.BasePath "/alertmanager-configmap.yaml") . | sha256sum }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ if .Values.rbac.create }}{{ template "aerospike.fullname" . }}{{ else }}{{ .Values.rbac.serviceAccountName }}{{ end }}
+      containers:
+      - name: prometheus-alertmanager
+        image: "{{ .Values.alertmanager.image.repository }}:{{ .Values.alertmanager.image.tag }}"
+        imagePullPolicy: "IfNotPresent"
+        args:
+          - --config.file=/etc/config/alertmanager.yaml
+          - --storage.path="{{ .Values.alertmanager.volume.mountPath }}"
+          - --web.listen-address=:{{ .Values.alertmanager.webPort | default 9093 }}
+          - --web.route-prefix=/
+          - --cluster.listen-address=$(POD_IP):{{ .Values.alertmanager.meshPort | default 9094 }}
+          - --log.level={{ .Values.alertmanager.loglevel }}
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        ports:
+          - containerPort: {{ .Values.alertmanager.webPort | default 9093 }}
+            name: http
+          - containerPort: {{ .Values.alertmanager.meshPort | default 9094 }}
+            name: mesh
+        readinessProbe:
+          httpGet:
+            path: /#/status
+            port: {{ .Values.alertmanager.webPort | default 9093 }}
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        resources:
+{{ toYaml .Values.alertmanager.resources | indent 10 }}
+        volumeMounts:
+          - name: config-volume
+            mountPath: /etc/config
+          {{- if .Values.alertmanager.persistenceStorage }}
+          {{- if .Values.alertmanager.persistenceStorage.enabled }}
+          {{- if eq .Values.alertmanager.persistenceStorage.volumeMode "Filesystem"}}
+          - name: {{ .Values.alertmanager.persistenceStorage.name | quote }}
+            mountPath: {{ .Values.alertmanager.persistenceStorage.mountPath | quote }}
+          {{- end }}
+          {{- end }}
+          {{- end }}
+          {{- if .Values.alertmanager.volume }}
+          - name: {{ .Values.alertmanager.volume.name | quote }}
+            mountPath: {{ .Values.alertmanager.volume.mountPath | quote }}
+          {{- end }}
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ .Release.Name }}-alertmanager-config
+        {{- if .Values.alertmanager.volume }}
+        - name: {{ .Values.alertmanager.volume.name | quote }}
+{{ toYaml .Values.alertmanager.volume.template  | indent 10}}
+        {{- end }}
+  volumeClaimTemplates:
+    {{- if .Values.alertmanager.persistenceStorage }}
+    {{- if .Values.alertmanager.persistenceStorage.enabled }}
+    - metadata:
+        name: {{ .Values.alertmanager.persistenceStorage.name }}
+        labels: *Labels
+      spec:
+        volumeMode: {{ .Values.alertmanager.persistenceStorage.volumeMode }}
+        accessModes:
+          - {{ .Values.alertmanager.persistenceStorage.accessMode | quote }}
+      {{- if hasKey .Values.alertmanager.persistenceStorage "storageClass" }}
+        storageClassName: {{ .Values.alertmanager.persistenceStorage.storageClass | quote }}
+      {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.alertmanager.persistenceStorage.size | quote }}
+    {{- end }}
+    {{- end }}
+{{- end }}

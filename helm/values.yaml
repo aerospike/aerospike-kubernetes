@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Copyright 2012-2019 Aerospike, Inc.
+# Copyright 2012-2020 Aerospike, Inc.
 #
 # Portions may be licensed to Aerospike, Inc. under one or more contributor
 # license agreements.
@@ -16,33 +16,61 @@
 # ------------------------------------------------------------------------------
 
 ###
-### Configuration file to set default values for deployment using Helm
+### Configuration file to set default values for Helm Chart deployment
 ###
 
+### -------------------------------------
 ### Statefulset and K8s config variables
-namespace: default
-dbReplicas: 3 # Also controles number of nodes in the cluster.
+### -------------------------------------
+
+# Number of replicas
+dbReplicas: 3 # Also controls number of nodes in the aerospike cluster.
+
+# Number of seconds to wait after SIGTERM before force killing the pod.
 terminationGracePeriodSeconds: 120
 
-### Aerospike server Community docker image
+### -----------------------------------------
+### Aerospike server docker image
+### -----------------------------------------
+
 image:
   repository: aerospike/aerospike-server
-  tag: 4.7.0.5
+  tag: 4.8.0.5
 
-### Aerospike tools docker image
-toolsImage:
-  repository: aerospike/aerospike-tools
-  tag: 3.22.0
+### -------------------------------
+### Aerospike init container image
+### -------------------------------
 
-### Aerospike Deployment configurations
+initImage:
+  repository: aerospike/aerospike-kubernetes-init
+  tag: 1.0.0
+
+
+### ---------------------------------
+### Aerospike related configurations
+### ---------------------------------
+
+# Auto generate and assign node-id(s) based on Pod's Ordinal Index.
 autoGenerateNodeIds: false
 
-aerospikeNamespace: "test"
-aerospikeNamespaceMemoryGB: "1"
-aerospikeReplicationFactor: "2"
-aerospikeDefaultTTL: "0"
+# Default Namespace related configuration
 
+# aerospikeNamespace: "test"
+# aerospikeNamespaceMemoryGB: "1"
+# aerospikeReplicationFactor: "2"
+# aerospikeDefaultTTL: "0"
+
+# Aerospike TCP ports
+
+# aerospikeClientPort: 3000
+# aerospikeHeartbeatPort: 3002
+# aerospikeFabricPort: 3001
+# aerospikeInfoPort: 3003
+
+
+### -----------------------------------
 ### Deployment specific configurations
+### -----------------------------------
 
 # Rollout ConfigMap/Secrets changes on 'helm upgrade'
 # Alternatively, use 'kubectl rollout restart'
@@ -53,6 +81,44 @@ autoRolloutConfig: false
 # With 'platform' set and 'hostNetworking' enabled, client applications from outside the network can connect to Aerospike Cluster.
 hostNetworking: false
 platform: none
+
+# Enable NodePort Services (Type: NodePort) to expose aerospike statefulset (Use helm upgrade for scale up/down).
+enableNodePortServices: false
+
+# Enable LoadBalancer Services (Type: LoadBalancer) to expose aerospike statefulset (Use helm upgrade for scale up/down).
+enableLoadBalancerServices: false
+
+# Enable external IP Services (Type: ClusterIP) to expose aerospike statefulset (Use helm upgrade for scale up/down)
+enableExternalIpServices: false
+externalIpEndpoints: {}
+  # - IP: 10.160.15.216
+  #   Port: 7000
+  # - IP: 10.160.15.216
+  #   Port: 7001
+  # - IP: 10.160.15.216
+  #   Port: 7002
+  # - IP: 10.160.15.216
+  #   Port: 7003
+  # - IP: 10.160.15.216
+  #   Port: 7004
+  # - IP: 10.160.15.217
+  #   Port: 8000
+  # - IP: 10.160.15.217
+  #   Port: 8001
+  # - IP: 10.160.15.217
+  #   Port: 8002
+  # - IP: 10.160.15.217
+  #   Port: 8003
+  # - IP: 10.160.15.217
+  #   Port: 8004
+
+# Create and use a new ServiceAccount with a new ClusterRole for the Aerospike Statefulset deployment. If already have one, specify serviceAccountName below leaving create=false.
+# <ReleaseName>-aerospike
+# This serviceAccountName is used for aerospike, prometheus, grafana and alertmanager statefulsets.
+# If the 'default' serviceAccount doesn't have enough permissions to read resources (or if you are not sure), set rbac.create=true.
+rbac:
+  create: false
+  serviceAccountName: default
 
 # Affinity / AntiAffinity configurations
 # Setting 'antiAffinity' option will prevent two pods of the same release be scheduled on the same node.
@@ -71,6 +137,7 @@ affinity: {}
   #         values:
   #         - gke-gke-blr-default-pool-06a23412-0dkt
 
+# Define storage devices for aerospike nodes (pods)
 persistenceStorage: {}
 #  - mountPath: /opt/aerospike/data
 #    enabled: false
@@ -98,6 +165,7 @@ volumes:
 #    template:
 #      emptyDir: {}
 
+# Resources - limits / requests
 resources: {}
   # limits:
   #   cpu: 1
@@ -106,6 +174,198 @@ resources: {}
   #   cpu: 1
   #   memory: 1Gi
 
-
+### -----------------------------------------------------------
 ### Dynamic configuration - Used during 'helm install...' etc.
+### -----------------------------------------------------------
+
+# Aerospike Configuration file path on helm "client" machine (from where the user is running 'helm install')
 # confFilePath:
+
+# (Only when enableAerospikeMonitoring = true) Aerospike alert rules configuration file path on helm "client" machine (from where the user is running 'helm install')
+# prometheus.aerospikeAlertRulesFilePath:
+
+# (Only when enableAerospikeMonitoring = true) Alertmanager configuration file path on helm "client" machine (from where the user is running 'helm install')
+# alertmanager.alertmanagerConfFilePath:
+
+
+### -----------------------------------------
+### Aerospike Monitoring Stack Configuration
+### -----------------------------------------
+
+# Enable Aerospike Monitoring - sidecar prometheus exporter, Prometheus, Grafana, Alertmanager stack
+enableAerospikeMonitoring: false
+
+
+### --------------------------------------------
+### Aerospike Prometheus Exporter configuration
+### --------------------------------------------
+
+exporterImage:
+  repository: aerospike/aerospike-prometheus-exporter
+  tag: 1.0.0
+
+exporter: {}
+  # agentUpdateInterval: 5
+  # agentTags: "'agent', 'aerospike'"
+  # agentBindHost: ""
+  # agentBindPort: 9145
+  # agentTimeout: 10
+  # agentLogLevel: "info"
+  # asHost: "localhost"
+  # asPort: 3000
+  # tickerInterval: 5
+  # tickerTimeout: 5
+  # asAuthMode: ""
+  # asAuthUser: ""
+  # asAuthPassword: ""
+
+
+### -------------------------
+### Prometheus Configuration
+### -------------------------
+
+prometheus:
+  # Number of replicas for prometheus statefulset
+  replicas: 2
+
+  # Prometheus server port
+  serverPort: 9090
+
+  # Prometheus statefulset configs
+  terminationGracePeriodSeconds: 120
+  podManagementPolicy: "Parallel"
+  updateStrategy:
+    type: "RollingUpdate"
+
+  # Prometheus docker image
+  image:
+    repository: prom/prometheus
+    tag: v2.11.1
+
+  # Define storage for Prometheus data
+  persistenceStorage:
+    # mountPath: /data
+    # enabled: false
+    # name: prometheus-data
+    # storageClass: standard
+    # accessMode: ReadWriteOnce
+    # volumeMode: Filesystem
+    # size: 1Gi
+  volume:
+    mountPath: /data
+    name: prometheus-data
+    template:
+      emptyDir: {}
+
+  # Resources - limits / requests
+  resources: {}
+    # limits:
+    #   cpu: 1
+    #   memory: 1Gi
+    # requests:
+    #   cpu: 1
+    #   memory: 1Gi
+
+  # Aerospike alert rules configuration file path on helm "client" machine (from where the user is running 'helm install')
+  # aerospikeAlertRulesFilePath:
+
+
+### ----------------------
+### Grafana Configuration
+### ----------------------
+
+grafana:
+  # Number of replicas for grafana statefulset
+  replicas: 1
+
+  # Grafana server http_port
+  httpPort: 3000
+
+  # Grafana docker image
+  image:
+    repository: grafana/grafana
+    tag: 6.3.2
+
+  # Define storage for grafana data
+  persistenceStorage:
+    # mountPath: /var/lib/grafana
+    # enabled: false
+    # name: grafana-data
+    # storageClass: standard
+    # accessMode: ReadWriteOnce
+    # volumeMode: Filesystem
+    # size: 1Gi
+  volume:
+    mountPath: /var/lib/grafana
+    name: grafana-data
+    template:
+      emptyDir: {}
+
+  # Grafana plugins to install at startup
+  plugins: "camptocamp-prometheus-alertmanager-datasource"
+
+  # Grafana username and password
+  user: "admin"
+  password: "admin"
+
+  # Resources - limits / requests
+  resources: {}
+    # limits:
+    #   cpu: 1
+    #   memory: 1Gi
+    # requests:
+    #   cpu: 1
+    #   memory: 1Gi
+
+
+### ---------------------------
+### Alertmanager Configuration
+### ---------------------------
+
+alertmanager:
+  # Number of replicas for alertmanager statefulset
+  replicas: 1
+
+  # Alertmanager web port and gossip port
+  webPort: 9093
+  meshPort: 9094
+
+  # Alertmanager statefulset configs
+  podManagementPolicy: "OrderedReady"
+  updateStrategy:
+    type: "RollingUpdate"
+
+  # Alertmanager docker image
+  image:
+    repository: prom/alertmanager
+    tag: latest
+
+  # Alertmanager logging level
+  loglevel: info
+
+  # Define storage for alertmanager data
+  persistenceStorage:
+    # mountPath: /data
+    # enabled: false
+    # name: alertmanager-data
+    # storageClass: standard
+    # accessMode: ReadWriteOnce
+    # volumeMode: Filesystem
+    # size: 1Gi
+  volume:
+    mountPath: /data
+    name: alertmanager-data
+    template:
+      emptyDir: {}
+
+  # Resources - limits / requests
+  resources: {}
+    # limits:
+    #   cpu: 1
+    #   memory: 1Gi
+    # requests:
+    #   cpu: 1
+    #   memory: 1Gi
+
+  # Alertmanager configuration file path on helm "client" machine (from where the user is running 'helm install')
+  # alertmanagerConfFilePath:

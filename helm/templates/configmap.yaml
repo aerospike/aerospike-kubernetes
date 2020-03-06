@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Copyright 2012-2019 Aerospike, Inc.
+# Copyright 2012-2020 Aerospike, Inc.
 #
 # Portions may be licensed to Aerospike, Inc. under one or more contributor
 # license agreements.
@@ -21,11 +21,12 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ .Release.Name }}-conf
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ template "aerospike.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
 data:
-  on-start.sh: {{ tpl (.Files.Get "files/on-start.sh") . | quote }}
-  install.sh: {{ tpl (.Files.Get "files/install.sh") . | quote }}
-
   # Use dynamically supplied aerospike.template.conf over the existing one.
   {{ if .Files.Get "files/aerospike.template.conf" }}
   aerospike.template.conf: {{ tpl (.Files.Get "files/aerospike.template.conf") . | quote }}
@@ -34,4 +35,16 @@ data:
   aerospike.template.conf: |-
     {{ .Values.confFilePath | nindent 4 | trim }}
   {{ end }}
+
+  # Add on-start.sh script to configmap if available
+  {{ if .Files.Get "files/on-start.sh" }}
+  on-start.sh: {{ tpl (.Files.Get "files/on-start.sh") . | quote }}
+  {{ end }}
+
+  # Add aerospike-prometheus-exporter config template to config if monitoring is enabled and if the file is available
+  {{- if .Values.enableAerospikeMonitoring }}
+  {{ if .Files.Get "files/ape.toml.template" }}
+  ape.toml.template: {{ tpl (.Files.Get "files/ape.toml.template") . | quote }}
+  {{ end }}
+  {{- end }}
 ---

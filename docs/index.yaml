@@ -2,10 +2,10 @@ apiVersion: v1
 entries:
   aerospike:
   - apiVersion: v1
-    appVersion: 4.7.0.5
-    created: "2019-12-11T14:29:07.768744+05:30"
+    appVersion: 4.8.0.5
+    created: "2020-03-07T03:47:41.057394+05:30"
     description: A Helm chart for Aerospike Server Community Edition on Kubernetes
-    digest: f88202c5abc0d2264aab68c88c317554e80227212e4fb742e47d2602fe6da467
+    digest: 916e89ec2a85d6c7ad5b69f8dfaf2a2d55a3e41f5de02299a05a6592dabd40ab
     icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
     maintainers:
     - email: kesan@aerospike.com
@@ -13,16 +13,35 @@ entries:
     name: aerospike
     sources:
     - https://github.com/aerospike/aerospike-server.docker
-    - https://github.com/aerospike/aerospike-tools.docker
     - https://github.com/aerospike/aerospike-kubernetes
+    - https://github.com/aerospike/aerospike-kubernetes-init
+    - https://github.com/aerospike/aerospike-prometheus-exporter
+    urls:
+    - https://aerospike.github.io/aerospike-kubernetes/aerospike-4.8.0.tgz
+    version: 4.8.0
+  - apiVersion: v1
+    appVersion: 4.7.0.10
+    created: "2020-03-07T03:47:41.055905+05:30"
+    description: A Helm chart for Aerospike Server Community Edition on Kubernetes
+    digest: 78fba0cc7280436181de267231b23962bd4b5561e9263bcaf7b7d5f8047dbe2a
+    icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
+    maintainers:
+    - email: kesan@aerospike.com
+      name: spkesan
+    name: aerospike
+    sources:
+    - https://github.com/aerospike/aerospike-server.docker
+    - https://github.com/aerospike/aerospike-kubernetes
+    - https://github.com/aerospike/aerospike-kubernetes-init
+    - https://github.com/aerospike/aerospike-prometheus-exporter
     urls:
     - https://aerospike.github.io/aerospike-kubernetes/aerospike-4.7.0.tgz
     version: 4.7.0
   - apiVersion: v1
-    appVersion: 4.6.0.8
-    created: "2019-12-11T14:29:07.766151+05:30"
+    appVersion: 4.6.0.12
+    created: "2020-03-07T03:47:41.054267+05:30"
     description: A Helm chart for Aerospike Server Community Edition on Kubernetes
-    digest: ee32e1966892a0f5fe210a61f314cc9fae380be0121fed533423b7453e5c5d58
+    digest: 69040ff91fed43f242f5e45c32dbce5034e96846e787e9af8dcf6b60dd880a70
     icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
     maintainers:
     - email: kesan@aerospike.com
@@ -30,9 +49,10 @@ entries:
     name: aerospike
     sources:
     - https://github.com/aerospike/aerospike-server.docker
-    - https://github.com/aerospike/aerospike-tools.docker
     - https://github.com/aerospike/aerospike-kubernetes
+    - https://github.com/aerospike/aerospike-kubernetes-init
+    - https://github.com/aerospike/aerospike-prometheus-exporter
     urls:
     - https://aerospike.github.io/aerospike-kubernetes/aerospike-4.6.0.tgz
     version: 4.6.0
-generated: "2019-12-11T14:29:07.763652+05:30"
+generated: "2020-03-07T03:47:41.05153+05:30"

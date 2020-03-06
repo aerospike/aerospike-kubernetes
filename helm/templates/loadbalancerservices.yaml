@@ -15,31 +15,27 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-# Headless service to provide DNS lookup
+{{- if .Values.enableLoadBalancerServices }}
+{{- $dot := . }}
+{{ range $podIndex := until (int .Values.dbReplicas) -}}
+---
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
-  name: {{ template "aerospike.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  name: "loadbalancer-{{ $.Release.Name }}-{{ $.Chart.Name }}-{{ $podIndex }}"
+  namespace: {{ $.Release.Namespace }}
   labels:
-    app: {{ template "aerospike.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    release: {{ .Release.Name }}
+    app: {{ template "aerospike.name" $dot }}
+    chart: {{ $.Chart.Name }}-{{ $.Chart.Version }}
+    release: {{ $.Release.Name }}
 spec:
-  publishNotReadyAddresses: true
+  type: LoadBalancer
+  externalTrafficPolicy: Local
   ports:
-  - port: {{ .Values.aerospikeClientPort | default 3000 }}
-    name: aerospike-client
-  {{- if .Values.enableAerospikeMonitoring }}
-  - port: {{ .Values.exporter.agentBindPort | default 9145 }}
-    name: aerospike-prometheus-exporter
-  {{- end }}
-  # *.aerospike.default.svc.cluster.local
-  clusterIP: None
+  - port: {{ $.Values.aerospikeClientPort | default 3000 }}
+    targetPort: {{ $.Values.aerospikeClientPort | default 3000 }}
   selector:
-    # Tells which pods are part of the DNS record
-    app: {{ template "aerospike.name" . }}
-    release: {{ .Release.Name }}
+    statefulset.kubernetes.io/pod-name: "{{ $.Release.Name }}-{{ $.Chart.Name }}-{{ $podIndex }}"
+{{ end -}}
+{{- end }}
 ---

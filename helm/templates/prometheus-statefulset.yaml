@@ -1,0 +1,131 @@
+# ------------------------------------------------------------------------------
+# Copyright 2012-2020 Aerospike, Inc.
+#
+# Portions may be licensed to Aerospike, Inc. under one or more contributor
+# license agreements.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
+# ------------------------------------------------------------------------------
+
+{{- if .Values.enableAerospikeMonitoring }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-prometheus
+  namespace: {{ .Release.Namespace }}
+  labels: &Labels
+    app: {{ template "aerospike.name" . }}-prometheus
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    app.kubernetes.io/component: prometheus
+spec:
+  serviceName: {{ .Release.Name }}-prometheus
+  replicas: {{ .Values.prometheus.replicas }}
+  podManagementPolicy: {{ .Values.prometheus.podManagementPolicy }}
+  updateStrategy:
+    type: {{ .Values.prometheus.updateStrategy.type }}
+  selector:
+    matchLabels: *Labels
+  template:
+    metadata:
+      labels: *Labels
+      annotations:
+        {{- if .Values.autoRolloutConfig }}
+        # TODO: Add an entry for secrets when used in future
+        checksum/config: {{ include (print $.Template.BasePath "/prometheus-configmap.yaml") . | sha256sum }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ if .Values.rbac.create }}{{ template "aerospike.fullname" . }}{{ else }}{{ .Values.rbac.serviceAccountName }}{{ end }}
+      initContainers:
+      - name: "init-chown-data"
+        image: debian:9
+        imagePullPolicy: "IfNotPresent"
+        command: ["chown", "-R", "65534:65534", "{{ .Values.prometheus.volume.mountPath }}"]
+        volumeMounts:
+        {{- if .Values.prometheus.persistenceStorage }}
+        {{- if .Values.prometheus.persistenceStorage.enabled }}
+        {{- if eq .Values.prometheus.persistenceStorage.volumeMode "Filesystem"}}
+        - name: {{ .Values.prometheus.persistenceStorage.name | quote }}
+          mountPath: {{ .Values.prometheus.persistenceStorage.mountPath | quote }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.prometheus.volume }}
+        - name: {{ .Values.prometheus.volume.name | quote }}
+          mountPath: {{ .Values.prometheus.volume.mountPath | quote }}
+        {{- end }}
+      containers:
+      - name: prometheus-server
+        image: "{{ .Values.prometheus.image.repository }}:{{ .Values.prometheus.image.tag }}"
+        imagePullPolicy: "IfNotPresent"
+        args:
+          - --config.file=/etc/prometheus/prometheus.yaml
+          - --storage.tsdb.path="{{ .Values.prometheus.volume.mountPath }}"
+          - --web.listen-address=:{{ .Values.prometheus.serverPort | default 9090 }}
+        ports:
+          - containerPort: {{ .Values.prometheus.serverPort | default 9090 }}
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: {{ .Values.prometheus.serverPort | default 9090 }}
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: {{ .Values.prometheus.serverPort | default 9090 }}
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        resources:
+{{ toYaml .Values.prometheus.resources | indent 10 }}
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/prometheus
+        {{- if .Values.prometheus.persistenceStorage }}
+        {{- if .Values.prometheus.persistenceStorage.enabled }}
+        {{- if eq .Values.prometheus.persistenceStorage.volumeMode "Filesystem"}}
+        - name: {{ .Values.prometheus.persistenceStorage.name | quote }}
+          mountPath: {{ .Values.prometheus.persistenceStorage.mountPath | quote }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.prometheus.volume }}
+        - name: {{ .Values.prometheus.volume.name | quote }}
+          mountPath: {{ .Values.prometheus.volume.mountPath | quote }}
+        {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.prometheus.terminationGracePeriodSeconds }}
+      volumes:
+      - name: config-volume
+        configMap:
+          name: {{ .Release.Name }}-prometheus-config
+      {{- if .Values.prometheus.volume }}
+      - name: {{ .Values.prometheus.volume.name | quote }}
+{{ toYaml .Values.prometheus.volume.template  | indent 8}}
+      {{- end }}
+  volumeClaimTemplates:
+    {{- if .Values.prometheus.persistenceStorage }}
+    {{- if .Values.prometheus.persistenceStorage.enabled }}
+    - metadata:
+        name: {{ .Values.prometheus.persistenceStorage.name }}
+        labels: *Labels
+      spec:
+        volumeMode: {{ .Values.prometheus.persistenceStorage.volumeMode }}
+        accessModes:
+          - {{ .Values.prometheus.persistenceStorage.accessMode | quote }}
+      {{- if hasKey .Values.prometheus.persistenceStorage "storageClass" }}
+        storageClassName: {{ .Values.prometheus.persistenceStorage.storageClass | quote }}
+      {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.prometheus.persistenceStorage.size | quote }}
+    {{- end }}
+    {{- end }}
+{{- end }}

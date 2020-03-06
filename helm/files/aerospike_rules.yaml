@@ -1,0 +1,115 @@
+groups:
+  - name: aerospike.rules
+    rules:
+    - alert: NodeDown
+      expr: up{job="aerospike"} == 0
+      for: 30s
+      labels:
+        severity: "2"
+      annotations:
+        description: '{{ "{{" }} $labels.instance {{ "}}" }} has been down for more than 30 seconds.'
+        summary: Node {{ "{{" }} $labels.instance {{ "}}" }} down
+    - alert: NodeDown
+      expr: aerospike_node_up{job="aerospike"} == 0
+      for: 30s
+      labels:
+        severity: "2"
+      annotations:
+        description: '{{ "{{" }} $labels.instance {{ "}}" }} node is down.'
+        summary: Node {{ "{{" }} $labels.instance {{ "}}" }} down
+    - alert: TransactionQueueTooFull
+      expr: aerospike_node_stats_tsvc_queue{job="aerospike"} > 10000
+      for: 30s
+      labels:
+        severity: "1"
+      annotations:
+        description: 'Transaction queue for node {{ "{{" }} $labels.instance {{ "}}" }} is longer than 10000.'
+        summary: Transaction queue too full for node {{ "{{" }} $labels.instance {{ "}}" }}
+    - alert: NamespaceStopWrites
+      expr: aerospike_namespace_stop_writes{job="aerospike"} == 1
+      for: 30s
+      labels:
+        severity: "1"
+      annotations:
+        description: 'Used diskspace for namespace {{ "{{" }} $labels.ns {{ "}}" }} in node {{ "{{" }} $labels.instance {{ "}}" }} is above stop writes limit.'
+        summary: Stop Writes for {{ "{{" }} $labels.instance {{ "}}" }}/{{ "{{" }} $labels.ns {{ "}}" }}
+    - alert: ClockSkewStopWrites
+      expr: aerospike_namespace_clock_skew_stop_writes{job="aerospike"} == 1
+      for: 30s
+      labels:
+        severity: "1"
+      annotations:
+        description: 'Clock has skewed for namespace {{ "{{" }} $labels.ns {{ "}}" }} in node {{ "{{" }} $labels.instance {{ "}}" }}'
+        summary: Writes will be stopped by Aerospike
+    - alert: ClusterSize
+      expr: aerospike_node_stats_cluster_size{job="aerospike"} < {{ .Values.dbReplicas }}
+      for: 30s
+      labels:
+        severity: "2"
+      annotations:
+        description: 'Cluster size mismatch for namespace {{ "{{" }} $labels.ns {{ "}}" }} in node {{ "{{" }} $labels.instance {{ "}}" }}'
+        summary: Some of the node(s) has gone out of the cluster
+    - alert: DeadPartitions
+      expr: aerospike_namespace_dead_partitions{job="aerospike"} > 0
+      for: 30s
+      labels:
+        severity: "1"
+      annotations:
+        description: 'Some of the partition(s) for namespace {{ "{{" }} $labels.ns {{ "}}" }} in node {{ "{{" }} $labels.instance {{ "}}" }} are dead'
+        summary: Will require the use of the revive command to make them available again
+    - alert: HwmBreached
+      expr: aerospike_namespace_hwm_breached{job="aerospike"} == 1
+      for: 30s
+      labels:
+        severity: "2"
+      annotations:
+        description: 'High water mark has breached for namespace {{ "{{" }} $labels.ns {{ "}}" }} in node {{ "{{" }} $labels.instance {{ "}}" }}'
+        summary: Eviction will start to make the space available
+    - alert: UnavailablePartitions
+      expr: aerospike_namespace_unavailable_partitions{job="aerospike"} > 0
+      for: 30s
+      labels:
+        severity: "1"
+      annotations:
+        description: 'Some of the partition(s) is not available for namespace {{ "{{" }} $labels.ns {{ "}}" }} in node {{ "{{" }} $labels.instance {{ "}}" }}'
+        summary: Server could not found some partition(s). Check for the network issues and make sure cluster forms properly
+    - alert: XDRTimelag
+      expr: aerospike_node_stats_xdr_timelag{job="aerospike"} > 10 # user can configure the seconds. Refer XDR throttling
+      for: 30s
+      labels:
+        severity: "2"
+      annotations:
+        description: 'There seems some lag in XDR for namespace {{ "{{" }} $labels.ns {{ "}}" }} in node {{ "{{" }} $labels.instance {{ "}}" }}'
+        summary: Lag can be there in XDR due to network connectivity issues or errors writing at a destination cluster
+    - alert: LowDeviceAvailWarning
+      expr: aerospike_namespace_device_available_pct{job="aerospike"} < 20
+      for: 30s
+      labels:
+        severity: "2"
+      annotations:
+        description: 'Device available percentage has dropped below 20 for namespace {{ "{{" }} $labels.ns {{ "}}" }} in node {{ "{{" }} $labels.instance {{ "}}" }}'
+        summary: Defrag is unable to keep up with the current load {{ "{{" }} $labels.instance {{ "}}" }}/{{ "{{" }} $labels.ns {{ "}}" }}
+    - alert: LowDeviceAvailCritical
+      expr: aerospike_namespace_device_available_pct{job="aerospike"} < 15
+      for: 30s
+      labels:
+        severity: "1"
+      annotations:
+        description: 'Device available percentage has dropped below 15 for namespace {{ "{{" }} $labels.ns {{ "}}" }} in node {{ "{{" }} $labels.instance {{ "}}" }}'
+        summary: Usable disk resources are critically low which may result in a stop-writes if available percentage goes below 5
+    - alert: LowPmemAvailWarning
+      expr: aerospike_namespace_pmem_available_pct{job="aerospike"} < 20
+      for: 30s
+      labels:
+        severity: "2"
+      annotations:
+        description: 'Pmem available percentage has dropped below 20 for namespace {{ "{{" }} $labels.ns {{ "}}" }} in node {{ "{{" }} $labels.instance {{ "}}" }}'
+        summary: Defrag is unable to keep up with the current load {{ "{{" }} $labels.instance {{ "}}" }}/{{ "{{" }} $labels.ns {{ "}}" }}
+    - alert: LowPmemAvailCritical
+      expr: aerospike_namespace_pmem_available_pct{job="aerospike"} < 15
+      for: 30s
+      labels:
+        severity: "1"
+      annotations:
+        description: 'Pmem available percentage has dropped below 15 for namespace {{ "{{" }} $labels.ns {{ "}}" }} in node {{ "{{" }} $labels.instance {{ "}}" }}'
+        summary: Usable Pmem resource is critically low which may result in a stop-writes if available percentage goes below 5

@@ -1,0 +1,44 @@
+[Agent]
+update_interval = ${AGENT_UPDATE_INTERVAL}
+# File paths should be double quoted.
+# Certificate file for the metric servers for prometheus
+cert_file = "${AGENT_CERT_FILE}"
+# Key file for the metric servers for prometheus
+key_file = "${AGENT_KEY_FILE}"
+
+# tags to append to the prometheus metrics
+tags=[${AGENT_TAGS}]
+
+bind = "${AGENT_BIND_HOST}:${AGENT_BIND_PORT}"
+
+# metrics server timeout in seconds
+timeout = ${AGENT_TIMEOUT}
+
+# debug level can be info|warning,warn|error,err|debug
+log_level = "${AGENT_LOG_LEVEL}"
+
+[Aerospike]
+db_host="${AS_HOST}"
+db_port=${AS_PORT}
+
+# certificate file
+cert_file="${AS_CERT_FILE}"
+# key file
+key_file="${AS_KEY_FILE}"
+# node TLS name for authentication
+node_tls_name="${AS_NODE_TLS_NAME}"
+# root certificate file
+root_ca="${AS_ROOT_CA}"
+
+# authentication mode: internal (for server), external (LDAP, etc.)
+auth_mode="${AS_AUTH_MODE}"
+# database user
+user="${AS_AUTH_USER}"
+# database password
+password="${AS_AUTH_PASSWORD}"
+
+# ticker interval for requesting stats fro mthe database node
+resolution=${TICKER_INTERVAL}
+
+# timeout for sending commands to the server node in seconds
+timeout=${TICKER_TIMEOUT}
