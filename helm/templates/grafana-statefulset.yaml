@@ -1,0 +1,150 @@
+# ------------------------------------------------------------------------------
+# Copyright 2012-2020 Aerospike, Inc.
+#
+# Portions may be licensed to Aerospike, Inc. under one or more contributor
+# license agreements.
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not
+# use this file except in compliance with the License. You may obtain a copy of
+# the License at http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations under
+# the License.
+# ------------------------------------------------------------------------------
+
+{{- if .Values.enableAerospikeMonitoring }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}-grafana
+  namespace: {{ .Release.Namespace }}
+  labels: &Labels
+    app: {{ template "aerospike.name" . }}-grafana
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    app.kubernetes.io/component: grafana
+spec:
+  serviceName: {{ .Release.Name }}-grafana
+  replicas: {{ .Values.grafana.replicas }}
+  selector:
+    matchLabels: *Labels
+  template:
+    metadata:
+      labels: *Labels
+      annotations:
+        {{- if .Values.autoRolloutConfig }}
+        # TODO: Add an entry for secrets when used in future
+        checksum/config: {{ include (print $.Template.BasePath "/grafana-configmap.yaml") . | sha256sum }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ if .Values.rbac.create }}{{ template "aerospike.fullname" . }}{{ else }}{{ .Values.rbac.serviceAccountName }}{{ end }}
+      initContainers:
+      - name: "init-chmod-data"
+        image: debian:9
+        imagePullPolicy: "IfNotPresent"
+        command: ["chmod", "777", "{{ .Values.grafana.volume.mountPath }}"]
+        volumeMounts:
+        {{- if .Values.grafana.persistenceStorage }}
+        {{- if .Values.grafana.persistenceStorage.enabled }}
+        {{- if eq .Values.grafana.persistenceStorage.volumeMode "Filesystem"}}
+        - name: {{ .Values.grafana.persistenceStorage.name | quote }}
+          mountPath: {{ .Values.grafana.persistenceStorage.mountPath | quote }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.grafana.volume }}
+        - name: {{ .Values.grafana.volume.name | quote }}
+          mountPath: {{ .Values.grafana.volume.mountPath | quote }}
+        {{- end }}
+      containers:
+      - name: grafana
+        image: "{{ .Values.grafana.image.repository }}:{{ .Values.grafana.image.tag }}"
+        imagePullPolicy: "IfNotPresent"
+        volumeMounts:
+        - name: grafana-config
+          mountPath: "/etc/grafana/"
+        - name: grafana-provisioning-dashboards
+          mountPath: "/etc/grafana/provisioning/dashboards"
+        - name: grafana-provisioning-datasources
+          mountPath: "/etc/grafana/provisioning/datasources"
+        - name: grafana-dashboards
+          mountPath: "/var/lib/grafana/dashboards"
+        {{- if .Values.grafana.persistenceStorage }}
+        {{- if .Values.grafana.persistenceStorage.enabled }}
+        {{- if eq .Values.grafana.persistenceStorage.volumeMode "Filesystem"}}
+        - name: {{ .Values.grafana.persistenceStorage.name | quote }}
+          mountPath: {{ .Values.grafana.persistenceStorage.mountPath | quote }}
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.grafana.volume }}
+        - name: {{ .Values.grafana.volume.name | quote }}
+          mountPath: {{ .Values.grafana.volume.mountPath | quote }}
+        {{- end }}
+        ports:
+          - name: service
+            containerPort: 80
+            protocol: TCP
+          - name: grafana
+            containerPort: {{ .Values.grafana.httpPort | default 3000 }}
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: {{ .Values.grafana.httpPort | default 3000 }}
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: {{ .Values.grafana.httpPort | default 3000 }}
+          initialDelaySeconds: 60
+          timeoutSeconds: 30
+          failureThreshold: 10
+          periodSeconds: 10
+        resources:
+{{ toYaml .Values.grafana.resources | indent 10 }}
+        env:
+          - name: GF_SECURITY_ADMIN_USER
+            value: "{{ .Values.grafana.user }}"
+          - name: GF_SECURITY_ADMIN_PASSWORD
+            value: "{{ .Values.grafana.password }}"
+          - name: GF_INSTALL_PLUGINS
+            value: "{{ .Values.grafana.plugins }}"
+      volumes:
+        - name: grafana-config
+          configMap:
+            name: {{ .Release.Name }}-grafana-config
+        - name: grafana-dashboards
+          configMap:
+            name: {{ .Release.Name }}-grafana-dashboards
+        - name: grafana-provisioning-dashboards
+          configMap:
+            name: {{ .Release.Name }}-grafana-provisioning-dashboards
+        - name: grafana-provisioning-datasources
+          configMap:
+            name: {{ .Release.Name }}-grafana-provisioning-datasources
+        {{- if .Values.grafana.volume }}
+        - name: {{ .Values.grafana.volume.name | quote }}
+{{ toYaml .Values.grafana.volume.template  | indent 10}}
+        {{- end }}
+  volumeClaimTemplates:
+    {{- if .Values.grafana.persistenceStorage }}
+    {{- if .Values.grafana.persistenceStorage.enabled }}
+    - metadata:
+        name: {{ .Values.grafana.persistenceStorage.name }}
+        labels: *Labels
+      spec:
+        volumeMode: {{ .Values.grafana.persistenceStorage.volumeMode }}
+        accessModes:
+          - {{ .Values.grafana.persistenceStorage.accessMode | quote }}
+      {{- if hasKey .Values.grafana.persistenceStorage "storageClass" }}
+        storageClassName: {{ .Values.grafana.persistenceStorage.storageClass | quote }}
+      {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.grafana.persistenceStorage.size | quote }}
+    {{- end }}
+    {{- end }}
+{{- end }}

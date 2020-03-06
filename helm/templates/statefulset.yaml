@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Copyright 2012-2019 Aerospike, Inc.
+# Copyright 2012-2020 Aerospike, Inc.
 #
 # Portions may be licensed to Aerospike, Inc. under one or more contributor
 # license agreements.
@@ -15,13 +15,13 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-## Statefulset definition.
+## Aerospike Statefulset definition.
 
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: {{ template "aerospike.fullname" . }}
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels: &AerospikeDeploymentLabels
     app: {{ template "aerospike.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
@@ -43,6 +43,7 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- end }}
     spec:
+      serviceAccountName: {{ if .Values.rbac.create }}{{ template "aerospike.fullname" . }}{{ else }}{{ .Values.rbac.serviceAccountName }}{{ end }}
       {{- if eq .Values.antiAffinity "hard" }}
       affinity:
       {{- with .Values.affinity  }}
@@ -87,11 +88,13 @@ spec:
       - name: aerospike
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         ports:
-        - containerPort: 3000
-          name: aero-clients
-        - containerPort: 3002
+        - containerPort: {{ .Values.aerospikeClientPort | default 3000 }}
+          name: aero-client
+        - containerPort: {{ .Values.aerospikeHeartbeatPort | default 3002 }}
           name: aero-mesh
-        - containerPort: 3003
+        - containerPort: {{ .Values.aerospikeFabricPort | default 3001 }}
+          name: aero-fabric
+        - containerPort: {{ .Values.aerospikeInfoPort | default 3003 }}
           name: aero-info
         # Do not stop node before migrations are complete
         lifecycle:
@@ -111,7 +114,7 @@ spec:
           periodSeconds: 60
         readinessProbe:
           tcpSocket:
-              port: 3000
+              port: {{ .Values.aerospikeClientPort | default 3000 }}
           initialDelaySeconds: 10
           timeoutSeconds: 1
           periodSeconds: 10
@@ -143,13 +146,21 @@ spec:
 {{ toYaml .Values.resources | indent 10 }}
         env:
         - name: NAMESPACE
-          value: {{ .Values.aerospikeNamespace | quote }}
+          value: {{ .Values.aerospikeNamespace | default "test" | quote }}
         - name: REPL_FACTOR
-          value: {{ .Values.aerospikeReplicationFactor | quote }}
+          value: {{ .Values.aerospikeReplicationFactor | default "2" | quote }}
         - name: MEM_GB
-          value: {{ .Values.aerospikeNamespaceMemoryGB | quote }}
+          value: {{ .Values.aerospikeNamespaceMemoryGB | default "1" | quote }}
         - name: DEFAULT_TTL
-          value: {{ .Values.aerospikeDefaultTTL | quote }}
+          value: {{ .Values.aerospikeDefaultTTL | default "0" | quote }}
+        - name: SERVICE_PORT
+          value: {{ .Values.aerospikeClientPort | default 3000 | quote }}
+        - name: HB_PORT
+          value: {{ .Values.aerospikeHeartbeatPort | default 3002 | quote }}
+        - name: FABRIC_PORT
+          value: {{ .Values.aerospikeFabricPort | default 3001 | quote }}
+        - name: INFO_PORT
+          value: {{ .Values.aerospikeInfoPort | default 3003 | quote }}
         # Downward API:
         - name: MY_POD_NAME
           valueFrom:
@@ -163,16 +174,68 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+      {{- if .Values.enableAerospikeMonitoring }}
+      - name: aerospike-prometheus-exporter
+        image: "{{ .Values.exporterImage.repository }}:{{ .Values.exporterImage.tag }}"
+        args: ["aerospike-prometheus-exporter", "--config", "/etc/aerospike-prometheus-exporter/ape.toml"]
+        ports:
+        - containerPort: {{ .Values.exporter.agentBindPort | default 9145 }}
+          name: exporter
+        volumeMounts:
+        - name: apeconfdir
+          mountPath: /etc/aerospike-prometheus-exporter
+        env:
+        - name: MY_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: MY_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: MY_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: AS_HOST
+          value: {{ .Values.exporter.asHost | default "localhost" | quote }}
+        - name: AS_PORT
+          value: {{ .Values.exporter.asPort | default 3000 | quote }}
+        - name: AGENT_BIND_HOST
+          value: {{ .Values.exporter.agentBindHost | default "" | quote }}
+        - name: AGENT_BIND_PORT
+          value: {{ .Values.exporter.agentBindPort | default 9145 | quote }}
+        - name: AGENT_LOG_LEVEL
+          value: {{ .Values.exporter.agentLogLevel | default "info" | quote }}
+        - name: AGENT_TIMEOUT
+          value: {{ .Values.exporter.agentTimeout | default 10 | quote }}
+        - name: AGENT_TAGS
+          value: {{ .Values.exporter.agentTags | default "" | quote }}
+        - name: AGENT_UPDATE_INTERVAL
+          value: {{ .Values.exporter.agentUpdateInterval | default 5 |quote }}
+        - name: TICKER_INTERVAL
+          value: {{ .Values.exporter.tickerInterval | default 5 | quote }}
+        - name: TICKER_TIMEOUT
+          value: {{ .Values.exporter.tickerTimeout | default 5 | quote }}
+        - name: AS_AUTH_MODE
+          value: {{ .Values.exporter.asAuthMode | default "" | quote }}
+        - name: AS_AUTH_USER
+          value: {{ .Values.exporter.asAuthUser | default "" | quote }}
+        - name: AS_AUTH_PASSWORD
+          value: {{ .Values.exporter.asAuthPassword | default "" | quote }}
+      {{- end }}
       initContainers:
       - name: aerospike-init
-        image: "{{ .Values.toolsImage.repository }}:{{ .Values.toolsImage.tag }}"
-        command: ["/bin/sh"]
-        args: ["-c", "cp /configs/install.sh /install.sh && chmod +x /install.sh && /install.sh"]
+        image: "{{ .Values.initImage.repository }}:{{ .Values.initImage.tag }}"
         volumeMounts:
         - name: confdir
           mountPath: /etc/aerospike
         - name: initconfigs
           mountPath: /configs
+        {{- if .Values.enableAerospikeMonitoring }}
+        - name: apeconfdir
+          mountPath: /etc/aerospike-prometheus-exporter
+        {{- end }}
         env:    # Variables needed by peer-finder for discovery
         - name: POD_NAMESPACE
           valueFrom:
@@ -184,17 +247,31 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
-        {{- if .Values.autoGenerateNodeIds }}
+        - name: CLUSTER_NAME
+          value: "{{ .Release.Name }}-{{ .Chart.Name }}"
+        - name: HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: HB_PORT
+          value: {{ .Values.aerospikeHeartbeatPort | default 3002 | quote }}
         - name: AUTO_GENERATE_NODE_IDS
-          value: "true"
-        {{- end }}
+          value: {{ .Values.autoGenerateNodeIds | default false | quote }}
         - name: PLATFORM
           value: {{ .Values.platform | quote }}
-        {{- if .Values.hostNetworking }}
         - name: HOST_NETWORK
-          value: "true"
-        {{- end }}
+          value: {{ .Values.hostNetworking | default false | quote }}
+        - name: ENABLE_NODE_PORT_SERVICES
+          value: {{ .Values.enableNodePortServices | default false | quote }}
+        - name: ENABLE_LOADBALANCER_SERVICES
+          value: {{ .Values.enableLoadBalancerServices | default false | quote }}
+        - name: ENABLE_EXT_IP_SERVICES
+          value: {{ .Values.enableExternalIpServices | default false | quote }}
       volumes:
+      {{- if .Values.enableAerospikeMonitoring }}
+      - name: apeconfdir
+        emptyDir: {}
+      {{- end }}
       - name: confdir
         emptyDir: {}
       - name: initconfigs

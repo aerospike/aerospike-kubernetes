@@ -15,31 +15,23 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-# Headless service to provide DNS lookup
+{{- if .Values.enableAerospikeMonitoring }}
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
-  name: {{ template "aerospike.fullname" . }}
+  name: {{ .Release.Name }}-grafana
   namespace: {{ .Release.Namespace }}
   labels:
-    app: {{ template "aerospike.name" . }}
+    app: {{ template "aerospike.name" . }}-grafana
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     release: {{ .Release.Name }}
+    app.kubernetes.io/component: grafana
 spec:
-  publishNotReadyAddresses: true
   ports:
-  - port: {{ .Values.aerospikeClientPort | default 3000 }}
-    name: aerospike-client
-  {{- if .Values.enableAerospikeMonitoring }}
-  - port: {{ .Values.exporter.agentBindPort | default 9145 }}
-    name: aerospike-prometheus-exporter
-  {{- end }}
-  # *.aerospike.default.svc.cluster.local
-  clusterIP: None
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: {{ .Values.grafana.httpPort | default 3000 }}
   selector:
-    # Tells which pods are part of the DNS record
-    app: {{ template "aerospike.name" . }}
-    release: {{ .Release.Name }}
----
+    app: {{ template "aerospike.name" . }}-grafana
+{{- end }}

@@ -15,31 +15,22 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-# Headless service to provide DNS lookup
+{{- if .Values.enableAerospikeMonitoring }}
 apiVersion: v1
-kind: Service
+kind: ConfigMap
 metadata:
-  annotations:
-    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
-  name: {{ template "aerospike.fullname" . }}
-  namespace: {{ .Release.Namespace }}
+  name: {{ .Release.Name }}-alertmanager-config
   labels:
-    app: {{ template "aerospike.name" . }}
+    app: {{ template "aerospike.name" . }}-alertmanager
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     release: {{ .Release.Name }}
-spec:
-  publishNotReadyAddresses: true
-  ports:
-  - port: {{ .Values.aerospikeClientPort | default 3000 }}
-    name: aerospike-client
-  {{- if .Values.enableAerospikeMonitoring }}
-  - port: {{ .Values.exporter.agentBindPort | default 9145 }}
-    name: aerospike-prometheus-exporter
-  {{- end }}
-  # *.aerospike.default.svc.cluster.local
-  clusterIP: None
-  selector:
-    # Tells which pods are part of the DNS record
-    app: {{ template "aerospike.name" . }}
-    release: {{ .Release.Name }}
----
+    app.kubernetes.io/component: alertmanager
+data:
+  {{ if .Files.Get "files/alertmanager.yaml" }}
+  alertmanager.yaml: {{ tpl (.Files.Get "files/alertmanager.yaml") . | quote }}
+  {{ end }}
+  {{ if (.Values.alertmanager.alertmanagerConfFilePath) }}
+  alertmanager.yaml: |-
+    {{ .Values.alertmanager.alertmanagerConfFilePath | nindent 4 | trim }}
+  {{ end }}
+{{- end }}

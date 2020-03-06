@@ -1,7 +1,5 @@
-#! /bin/bash
-
 # ------------------------------------------------------------------------------
-# Copyright 2012-2019 Aerospike, Inc.
+# Copyright 2012-2020 Aerospike, Inc.
 #
 # Portions may be licensed to Aerospike, Inc. under one or more contributor
 # license agreements.
@@ -16,31 +14,33 @@
 # License for the specific language governing permissions and limitations under
 # the License.
 # ------------------------------------------------------------------------------
-
-
-CONFIG_VOLUME="/etc/aerospike"
-NAMESPACE=${POD_NAMESPACE:-default}
-K8_SERVICE=${SERVICE:-aerospike}
-for i in "$@"
-do
-case $i in
-    -c=*|--config=*)
-    CONFIG_VOLUME="${i#*=}"
-    shift
-    ;;
-    *)
-    # unknown option
-    ;;
-esac
-done
-
-echo installing aerospike.conf into "${CONFIG_VOLUME}"
-mkdir -p "${CONFIG_VOLUME}"
-#chown -R aerospike:aerospike "${CONFIG_VOLUME}"
-apt-get update && apt-get install -y wget
-wget https://github.com/aerospike/aerospike-kubernetes/raw/master/docs/peer-finder -O /peer-finder
-cp /configs/on-start.sh /on-start.sh
-cp /configs/aerospike.template.conf "${CONFIG_VOLUME}"/
-chmod +x /on-start.sh
-chmod +x /peer-finder
-/peer-finder -on-start=/on-start.sh -service=$K8_SERVICE -ns=${NAMESPACE} -domain=cluster.local
+---
+{{- if .Values.rbac.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app: {{ template "aerospike.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+  name: {{ template "aerospike.fullname" . }}
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - pods
+      - statefulsets
+      - configmaps
+      - secrets
+      - services
+      - nodes
+      - nodes/metrics
+      - endpoints
+    verbs:
+      - list
+      - watch
+      - get
+  - nonResourceURLs: ["/metrics"]
+    verbs: ["get"]
+{{- end -}}
