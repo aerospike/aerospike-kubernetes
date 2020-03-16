@@ -97,9 +97,7 @@ spec:
               fieldPath: status.podIP
       initContainers:
       - name: aerospike-init
-        image: aerospike/aerospike-tools
-        command: ["/bin/sh"]
-        args: ["-c", "cp /configs/install.sh /install.sh && chmod +x /install.sh && /install.sh"]
+        image: aerospike/aerospike-kubernetes-init:latest
         volumeMounts:
         - name: confdir
           mountPath: /etc/aerospike

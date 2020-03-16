@@ -2,7 +2,7 @@
 # Use "--set-file alertmanager.alertmanagerConfFilePath=<ConfigFilePath>" during "helm install" or "helm upgrade" to use custom alertmanager.yaml.
 
 global:
-  slack_api_url: "<slack-webhook-url>"
+  slack_api_url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
 route:
   group_by: ['alertname', 'cluster', 'service']
   receiver: slack_general
