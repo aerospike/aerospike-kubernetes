@@ -35,7 +35,7 @@ terminationGracePeriodSeconds: 120
 
 image:
   repository: aerospike/aerospike-server
-  tag: 4.8.0.5
+  tag: 4.8.0.6
 
 ### -------------------------------
 ### Aerospike init container image

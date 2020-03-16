@@ -16,7 +16,7 @@
 # ------------------------------------------------------------------------------
 
 apiVersion: v1
-appVersion: 4.8.0.5
+appVersion: 4.8.0.6
 description: A Helm chart for Aerospike Server Community Edition on Kubernetes
 name: aerospike
 version: 4.8.0

@@ -1,3 +1,4 @@
+
 Thank you for installing {{ .Chart.Name }}-{{ .Chart.AppVersion }}.
 Release Name - {{ .Release.Name }}.
               __
@@ -22,5 +23,13 @@ Release Name - {{ .Release.Name }}.
    \/       \/  \/       \/
 
 Run the following commands to get more information about deployment:
+
+For Helm v2,
   $ helm status {{ .Release.Name }}
   $ helm get {{ .Release.Name }}
+
+For Helm v3,
+  $ helm status {{ .Release.Name }}
+  $ helm get all {{ .Release.Name }}
+
+$ kubectl get all --namespace {{ .Release.Namespace }} -l "release={{ .Release.Name }}, chart={{ $.Chart.Name }}-{{ $.Chart.Version }}"

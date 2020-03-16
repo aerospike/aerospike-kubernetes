@@ -8,7 +8,7 @@ These manifests will allow you to deploy a fully formed Aerospike cluster in min
 It uses:
 
 - [aerospike-server docker image](https://hub.docker.com/r/aerospike/aerospike-server)
-- [aerospike-tools docker image](https://hub.docker.com/r/aerospike/aerospike-tools)
+- [aerospike-kubernetes-init docker image](https://hub.docker.com/r/aerospike/aerospike-kubernetes-init)
 
 ## Usage:
 
