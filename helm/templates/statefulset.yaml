@@ -243,6 +243,8 @@ spec:
               fieldPath: metadata.namespace
         - name: SERVICE
           value: {{ template "aerospike.fullname" . }}
+        - name: SERVICE_DNS_DOMAIN
+          value: {{ .Values.clusterServiceDnsDomain | default "cluster.local" | quote }}
         - name: POD_NAME
           valueFrom:
             fieldRef:

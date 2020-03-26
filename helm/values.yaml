@@ -29,6 +29,9 @@ dbReplicas: 3 # Also controls number of nodes in the aerospike cluster.
 # Number of seconds to wait after SIGTERM before force killing the pod.
 terminationGracePeriodSeconds: 120
 
+# K8s Cluster Service DNS Domain
+clusterServiceDnsDomain: cluster.local
+
 ### -----------------------------------------
 ### Aerospike server docker image
 ### -----------------------------------------
