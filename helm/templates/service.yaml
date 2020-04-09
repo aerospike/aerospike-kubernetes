@@ -32,7 +32,7 @@ spec:
   ports:
   - port: {{ .Values.aerospikeClientPort | default 3000 }}
     name: aerospike-client
-  {{- if .Values.enableAerospikeMonitoring }}
+  {{- if or (eq .Values.enableAerospikeMonitoring true) (eq .Values.enableAerospikePrometheusExporter true) }}
   - port: {{ .Values.exporter.agentBindPort | default 9145 }}
     name: aerospike-prometheus-exporter
   {{- end }}

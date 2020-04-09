@@ -2,10 +2,28 @@ apiVersion: v1
 entries:
   aerospike:
   - apiVersion: v1
-    appVersion: 4.8.0.6
-    created: "2020-03-16T23:01:17.608415+05:30"
+    appVersion: 4.9.0.3
+    created: "2020-04-10T05:14:40.491438+05:30"
     description: A Helm chart for Aerospike Server Community Edition on Kubernetes
-    digest: 00677c21b1d63b88cc3f1044729a94f8c6780f20f648b3d19c7c628cf646d40e
+    digest: 236936132a195dec6dd4c3d5d199e5933f01265bb3243143e672eb799575d438
+    icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
+    maintainers:
+    - email: kesan@aerospike.com
+      name: spkesan
+    name: aerospike
+    sources:
+    - https://github.com/aerospike/aerospike-server.docker
+    - https://github.com/aerospike/aerospike-kubernetes
+    - https://github.com/aerospike/aerospike-kubernetes-init
+    - https://github.com/aerospike/aerospike-prometheus-exporter
+    urls:
+    - https://aerospike.github.io/aerospike-kubernetes/aerospike-4.9.0.tgz
+    version: 4.9.0
+  - apiVersion: v1
+    appVersion: 4.8.0.8
+    created: "2020-04-10T05:14:40.489346+05:30"
+    description: A Helm chart for Aerospike Server Community Edition on Kubernetes
+    digest: e94aa75fffcd93e3afc87ec537ddd9edf396e486ff826a5a36c547567da9cc39
     icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
     maintainers:
     - email: kesan@aerospike.com
@@ -20,10 +38,10 @@ entries:
     - https://aerospike.github.io/aerospike-kubernetes/aerospike-4.8.0.tgz
     version: 4.8.0
   - apiVersion: v1
-    appVersion: 4.7.0.11
-    created: "2020-03-16T23:01:17.607033+05:30"
+    appVersion: 4.7.0.12
+    created: "2020-04-10T05:14:40.485732+05:30"
     description: A Helm chart for Aerospike Server Community Edition on Kubernetes
-    digest: 2604162d62b08af86d9996abba19b88d1d794a93052af61d17fbbb4a74525bdb
+    digest: 02b3f9740dd33fa0653152304f1721cab282c1091e67467dff5f9bca59a3ef64
     icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
     maintainers:
     - email: kesan@aerospike.com
@@ -38,10 +56,10 @@ entries:
     - https://aerospike.github.io/aerospike-kubernetes/aerospike-4.7.0.tgz
     version: 4.7.0
   - apiVersion: v1
-    appVersion: 4.6.0.13
-    created: "2020-03-16T23:01:17.605315+05:30"
+    appVersion: 4.6.0.14
+    created: "2020-04-10T05:14:40.483128+05:30"
     description: A Helm chart for Aerospike Server Community Edition on Kubernetes
-    digest: b5944cd78bc239856781e1c14d1993923f7d9fc0a7b3e5349da02d60e2bd0262
+    digest: a2e53de725a6f8b66aaba6935a59d5d147f92bd2f486200d2cb1c66c7b0a77e4
     icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
     maintainers:
     - email: kesan@aerospike.com
@@ -55,4 +73,4 @@ entries:
     urls:
     - https://aerospike.github.io/aerospike-kubernetes/aerospike-4.6.0.tgz
     version: 4.6.0
-generated: "2020-03-16T23:01:17.603744+05:30"
+generated: "2020-04-10T05:14:40.477228+05:30"

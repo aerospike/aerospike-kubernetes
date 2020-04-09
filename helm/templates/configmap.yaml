@@ -42,7 +42,7 @@ data:
   {{ end }}
 
   # Add aerospike-prometheus-exporter config template to config if monitoring is enabled and if the file is available
-  {{- if .Values.enableAerospikeMonitoring }}
+  {{- if or (eq .Values.enableAerospikeMonitoring true) (eq .Values.enableAerospikePrometheusExporter true) }}
   {{ if .Files.Get "files/ape.toml.template" }}
   ape.toml.template: {{ tpl (.Files.Get "files/ape.toml.template") . | quote }}
   {{ end }}
