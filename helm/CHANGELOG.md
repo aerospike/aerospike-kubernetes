@@ -11,6 +11,7 @@ This file documents all notable changes to Aerospike Helm Chart (Community Editi
 - Chart `4.7.0` updated to use Aerospike Server version `4.7.0.12`
 - Chart `4.8.0` updated to use Aerospike Server version `4.8.0.8`
 
+
 ## [1.2.1](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.2.1)
 
 - Fixed alertmanager's default dummy configuration to avoid `CrashLoopBackOff`.

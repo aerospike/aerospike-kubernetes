@@ -269,14 +269,14 @@ Aerospike Prometheus Exporter (sidecar) can be enabled by setting `enableAerospi
 
 ```sh
 helm install aerospike-release aerospike/aerospike \
-			 --set --set enableAerospikePrometheusExporter=true
+			 --set enableAerospikePrometheusExporter=true
 ```
 
 For Helm v2,
 
 ```sh
 helm install --name aerospike-release aerospike/aerospike \
-			 --set --set enableAerospikePrometheusExporter=true
+			 --set enableAerospikePrometheusExporter=true
 ```
 
 #### Deploy Complete Monitoring Stack
