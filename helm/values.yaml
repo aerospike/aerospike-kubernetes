@@ -38,7 +38,7 @@ clusterServiceDnsDomain: cluster.local
 
 image:
   repository: aerospike/aerospike-server
-  tag: 4.8.0.6
+  tag: 4.9.0.3
 
 ### -------------------------------
 ### Aerospike init container image
@@ -46,7 +46,7 @@ image:
 
 initImage:
   repository: aerospike/aerospike-kubernetes-init
-  tag: 1.0.0
+  tag: 1.1.0
 
 
 ### ---------------------------------
@@ -194,6 +194,10 @@ resources: {}
 ### -----------------------------------------
 ### Aerospike Monitoring Stack Configuration
 ### -----------------------------------------
+
+# Enable Aerospike Prometheus Exporter ONLY - sidecar - aerospike prometheus exporter.
+# If enableAerospikeMonitoring is set to true, no need to set enableAerospikePrometheusExporter to true.
+enableAerospikePrometheusExporter: false
 
 # Enable Aerospike Monitoring - sidecar prometheus exporter, Prometheus, Grafana, Alertmanager stack
 enableAerospikeMonitoring: false

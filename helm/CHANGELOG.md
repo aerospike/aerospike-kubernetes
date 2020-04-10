@@ -2,6 +2,16 @@
 
 This file documents all notable changes to Aerospike Helm Chart (Community Edition).
 
+## [1.3.0](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.3.0)
+
+- [CLOUD-7] - Added support for custom service dns domain
+- [PROD-1046] - Added new option `enableAerospikePrometheusExporter` to enable Aerospike Prometheus Exporter sidecar (only)
+- Added Chart `4.9.0` uses Aerospike Server version `4.9.0.3`
+- Chart `4.6.0` updated to use Aerospike Server version `4.6.0.14`
+- Chart `4.7.0` updated to use Aerospike Server version `4.7.0.12`
+- Chart `4.8.0` updated to use Aerospike Server version `4.8.0.8`
+
+
 ## [1.2.1](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.2.1)
 
 - Fixed alertmanager's default dummy configuration to avoid `CrashLoopBackOff`.

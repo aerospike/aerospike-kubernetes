@@ -174,7 +174,7 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-      {{- if .Values.enableAerospikeMonitoring }}
+      {{- if or (eq .Values.enableAerospikeMonitoring true) (eq .Values.enableAerospikePrometheusExporter true) }}
       - name: aerospike-prometheus-exporter
         image: "{{ .Values.exporterImage.repository }}:{{ .Values.exporterImage.tag }}"
         args: ["aerospike-prometheus-exporter", "--config", "/etc/aerospike-prometheus-exporter/ape.toml"]
@@ -232,7 +232,7 @@ spec:
           mountPath: /etc/aerospike
         - name: initconfigs
           mountPath: /configs
-        {{- if .Values.enableAerospikeMonitoring }}
+        {{- if or (eq .Values.enableAerospikeMonitoring true) (eq .Values.enableAerospikePrometheusExporter true) }}
         - name: apeconfdir
           mountPath: /etc/aerospike-prometheus-exporter
         {{- end }}
@@ -270,7 +270,7 @@ spec:
         - name: ENABLE_EXT_IP_SERVICES
           value: {{ .Values.enableExternalIpServices | default false | quote }}
       volumes:
-      {{- if .Values.enableAerospikeMonitoring }}
+      {{- if or (eq .Values.enableAerospikeMonitoring true) (eq .Values.enableAerospikePrometheusExporter true) }}
       - name: apeconfdir
         emptyDir: {}
       {{- end }}

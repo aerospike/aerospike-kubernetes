@@ -264,7 +264,25 @@ helm install --name aerospike-release aerospike/aerospike \
 
 Aerospike Helm Chart provides Aerospike Monitoring Stack which includes an Aerospike prometheus exporter (sidecar), Prometheus statefulset, Grafana statefulset and Alertmanager statefulset.
 
-Aerospike Monitoring can be enabled by setting `enableAerospikeMonitoring` option to `true`.
+#### Deploy Aerospike Prometheus Exporter (only)
+Aerospike Prometheus Exporter (sidecar) can be enabled by setting `enableAerospikePrometheusExporter` option to `true`.
+
+```sh
+helm install aerospike-release aerospike/aerospike \
+			 --set enableAerospikePrometheusExporter=true
+```
+
+For Helm v2,
+
+```sh
+helm install --name aerospike-release aerospike/aerospike \
+			 --set enableAerospikePrometheusExporter=true
+```
+
+#### Deploy Complete Monitoring Stack
+To deploy a complete monitoring stack which includes Prometheus, Grafana and Alertmanager, set `enableAerospikeMonitoring` option to `true`.
+
+Note that, setting `enableAerospikeMonitoring` to `true` will automatically enable Aerospike Prometheus Exporter (sidecar).
 
 ```sh
 helm install aerospike-release aerospike/aerospike \
@@ -298,9 +316,9 @@ Check the below [configuration section](#configuration) or [`values.yaml`](value
 | `terminationGracePeriodSeconds`                       | Number of seconds to wait after `SIGTERM` before force killing the pod.                                                                                                                   | `120`                                                                                                                |
 | `clusterServiceDnsDomain`                             | Kubernetes cluster service DNS domain                                                                                                                                                     | `cluster.local`                                                                                                      |
 | `image.repository`                                    | Aerospike Server Docker Image                                                                                                                                                             | `aerospike/aerospike-server`                                                                                         |
-| `image.tag`                                           | Aerospike Server Docker Image Tag                                                                                                                                                         | `4.8.0.6`                                                                                                            |
+| `image.tag`                                           | Aerospike Server Docker Image Tag                                                                                                                                                         | `4.9.0.3`                                                                                                            |
 | `initImage.repository`                                | Aerospike Kubernetes Init Container Image                                                                                                                                                 | `aerospike/aerospike-kubernetes-init`                                                                                |
-| `initImage.tag`                                       | Aerospike Kubernetes Init Container Image Tag                                                                                                                                             | `1.0.0`                                                                                                              |
+| `initImage.tag`                                       | Aerospike Kubernetes Init Container Image Tag                                                                                                                                             | `1.1.0`                                                                                                              |
 | `autoGenerateNodeIds`                                 | Auto generate and assign node-id(s) based on Pod's Ordinal Index                                                                                                                          | `false`                                                                                                              |
 | `aerospikeNamespace`                                  | Aerospike Namespace name                                                                                                                                                                  | `test`                                                                                                               |
 | `aerospikeNamespaceMemoryGB`                          | Aerospike Namespace Memory in GB                                                                                                                                                          | `1`                                                                                                                  |
@@ -328,6 +346,7 @@ Check the below [configuration section](#configuration) or [`values.yaml`](value
 | `confFilePath`                                        | Custom aerospike.conf file path on helm client machine (To be used during the runtime, `helm install` .. etc)                                                                             | `not defined`                                                                                                        |
 | `prometheus.aerospikeAlertRulesFilePath`              | Aerospike alert rules configuration file location on helm client machine (To be used during the runtime, `helm install` .. etc)                                                           | `not defined`                                                                                                        |
 | `alertmanager.alertmanagerConfFilePath`               | Alertmanager configuration file location on helm client machine (To be used during the runtime, `helm install` .. etc)                                                                    | `not defined`                                                                                                        |
+| `enableAerospikePrometheusExporter` 	                | Enable Sidecar Aerospike Prometheus Exporter (only)                                                                                                                                               | `false`					   	                                                                                       |
 | `enableAerospikeMonitoring`		 	                | Enable Aerospike Monitoring - sidecar prometheus exporter, Prometheus, Grafana, Alertmanager stack                                                                                        | `false`					   	                                                                                       |
 | `exporter.repository`                                 | Aerospike prometheus exporter image repository                                                                                                                                            | `aerospike/aerospike-prometheus-exporter`                                                                            |
 | `exporter.tag`                                        | Aerospike prometheus exporter image tag                                                                                                                                                   | `1.0.0`                                                                                                              |
