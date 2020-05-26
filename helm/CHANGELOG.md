@@ -2,6 +2,20 @@
 
 This file documents all notable changes to Aerospike Helm Chart (Community Edition).
 
+## [1.4.0](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.4.0)
+- Added configuration to apply pod `tolerations` for node `taints`
+- Added configuration to apply `nodeSelectors`
+- Prometheus' `scrapeInterval` and `evaluationInterval` now configurable
+- Allow to configure basic HTTP authentication for `/metrics` URL of the aerospike prometheus exporter
+- Added new grafana dashboard for `XDR` `5.0+` metrics and updated other dashboards.
+- Update Aerospike Prometheus Exporter Configurations
+- Added Chart `5.0.0` uses Aerospike Server version `5.0.0.4`
+- Chart `4.6.0` updated to use Aerospike Server version `4.6.0.17`
+- Chart `4.7.0` updated to use Aerospike Server version `4.7.0.15`
+- Chart `4.8.0` updated to use Aerospike Server version `4.8.0.11`
+- Chart `4.9.0` updated to use Aerospike Server version `4.9.0.8`
+
+
 ## [1.3.0](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.3.0)
 
 - [CLOUD-7] - Added support for custom service dns domain

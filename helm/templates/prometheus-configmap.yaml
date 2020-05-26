@@ -29,8 +29,8 @@ metadata:
 data:
   prometheus.yaml: |-
     global:
-      scrape_interval:     15s
-      evaluation_interval: 15s
+      scrape_interval:     {{ .Values.prometheus.scrapeInterval | default "15s" | quote }}
+      evaluation_interval: {{ .Values.prometheus.evaluationInterval | default "15s" | quote }}
 
     alerting:
       alertmanagers:
@@ -44,6 +44,12 @@ data:
 
     scrape_configs:
       - job_name: 'aerospike'
+
+        {{- if .Values.exporter.httpBasicAuthUsername }}
+        basic_auth:
+          username: {{ .Values.exporter.httpBasicAuthUsername }}
+          password: {{ .Values.exporter.httpBasicAuthPassword }}
+        {{- end }}
 
         kubernetes_sd_configs:
         - role: endpoints
