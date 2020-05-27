@@ -26,6 +26,7 @@ metadata:
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     release: {{ .Release.Name }}
     app.kubernetes.io/component: prometheus
+    unique-app: {{ .Release.Name }}-prometheus
 spec:
   serviceName: {{ .Release.Name }}-prometheus
   replicas: {{ .Values.prometheus.replicas }}
@@ -44,6 +45,47 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: {{ if .Values.rbac.create }}{{ template "aerospike.fullname" . }}{{ else }}{{ .Values.rbac.serviceAccountName }}{{ end }}
+      {{- if eq .Values.prometheus.antiAffinity "hard" }}
+      affinity:
+      {{- with .Values.prometheus.affinity  }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchExpressions:
+                - key: unique-app
+                  operator: In
+                  values:
+                  - {{ .Release.Name }}-prometheus
+      {{- else if eq .Values.prometheus.antiAffinity "soft" }}
+      affinity:
+      {{- with .Values.prometheus.affinity  }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: {{ .Values.prometheus.antiAffinityWeight }}
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                  - key: unique-app
+                    operator: In
+                    values:
+                    - {{ .Release.Name }}-prometheus
+      {{- else}}
+      {{- with .Values.prometheus.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.prometheus.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.prometheus.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
       initContainers:
       - name: "init-chown-data"
         image: debian:9

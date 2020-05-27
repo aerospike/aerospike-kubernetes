@@ -26,6 +26,7 @@ metadata:
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     release: {{ .Release.Name }}
     app.kubernetes.io/component: grafana
+    unique-app: {{ .Release.Name }}-grafana
 spec:
   serviceName: {{ .Release.Name }}-grafana
   replicas: {{ .Values.grafana.replicas }}
@@ -41,6 +42,47 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: {{ if .Values.rbac.create }}{{ template "aerospike.fullname" . }}{{ else }}{{ .Values.rbac.serviceAccountName }}{{ end }}
+      {{- if eq .Values.grafana.antiAffinity "hard" }}
+      affinity:
+      {{- with .Values.grafana.affinity  }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchExpressions:
+                - key: unique-app
+                  operator: In
+                  values:
+                  - {{ .Release.Name }}-grafana
+      {{- else if eq .Values.grafana.antiAffinity "soft" }}
+      affinity:
+      {{- with .Values.grafana.affinity  }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: {{ .Values.grafana.antiAffinityWeight }}
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                  - key: unique-app
+                    operator: In
+                    values:
+                    - {{ .Release.Name }}-grafana
+      {{- else}}
+      {{- with .Values.grafana.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.grafana.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.grafana.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
       initContainers:
       - name: "init-chmod-data"
         image: debian:9

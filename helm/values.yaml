@@ -123,7 +123,7 @@ rbac:
   create: false
   serviceAccountName: default
 
-# Affinity / AntiAffinity configurations
+# Affinity / AntiAffinity configurations (For Aerospike Pods)
 # Setting 'antiAffinity' option will prevent two pods of the same release be scheduled on the same node.
 # 'antiAffinity' levels can be "off" (not set), "soft" (preferredDuringSchedulingIgnoredDuringExecution) and "hard" (requiredDuringSchedulingIgnoredDuringExecution)
 # Set a desired 'antiAffinityWeight' in range 1-100 for "soft" antiAffinity option.
@@ -140,8 +140,8 @@ affinity: {}
   #         values:
   #         - gke-gke-blr-default-pool-06a23412-0dkt
 
-# Tolerations and Taints
-tolerations: {}
+# Tolerations and Taints (For Aerospike Pods)
+tolerations: []
   # - key: "key1"
   #   operator: "Equal"
   #   value: "value1"
@@ -151,7 +151,7 @@ tolerations: {}
   #   value: "value1"
   #   effect: "NoExecute"
 
-# Node Selector
+# Node Selector (For Aerospike Pods)
 nodeSelector: {}
 
 # Define storage devices for aerospike nodes (pods)
@@ -295,6 +295,33 @@ prometheus:
     #   cpu: 1
     #   memory: 1Gi
 
+  # Tolerations and Taints (For Prometheus Pods)
+  tolerations: []
+    # - key: "type"
+    #   operator: "Equal"
+    #   value: "monitoring"
+    #   effect: "NoSchedule"
+
+  # Node Selector (For Prometheus Pods)
+  nodeSelector: {}
+
+  # Affinity / AntiAffinity configurations (For Prometheus Pods)
+  # Setting 'antiAffinity' option will prevent two pods of the same release be scheduled on the same node.
+  # 'antiAffinity' levels can be "off" (not set), "soft" (preferredDuringSchedulingIgnoredDuringExecution) and "hard" (requiredDuringSchedulingIgnoredDuringExecution)
+  # Set a desired 'antiAffinityWeight' in range 1-100 for "soft" antiAffinity option.
+  # 'affinity' option can be used to defined any custom nodeAffinity/podAffinity/podAntiAffinity rules.
+  antiAffinity: "off"
+  antiAffinityWeight: 1
+  affinity: {}
+    # nodeAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #     nodeSelectorTerms:
+    #     - matchExpressions:
+    #       - key: kubernetes.io/hostname
+    #         operator: In
+    #         values:
+    #         - gke-gke-blr-default-pool-06a23412-0dkt
+
   # Aerospike alert rules configuration file path on helm "client" machine (from where the user is running 'helm install')
   # aerospikeAlertRulesFilePath:
 
@@ -346,6 +373,33 @@ grafana:
     #   cpu: 1
     #   memory: 1Gi
 
+  # Tolerations and Taints (For Grafana Pods)
+  tolerations: []
+    # - key: "type"
+    #   operator: "Equal"
+    #   value: "monitoring"
+    #   effect: "NoSchedule"
+
+  # Node Selector (For Grafana Pods)
+  nodeSelector: {}
+
+  # Affinity / AntiAffinity configurations (For Grafana Pods)
+  # Setting 'antiAffinity' option will prevent two pods of the same release be scheduled on the same node.
+  # 'antiAffinity' levels can be "off" (not set), "soft" (preferredDuringSchedulingIgnoredDuringExecution) and "hard" (requiredDuringSchedulingIgnoredDuringExecution)
+  # Set a desired 'antiAffinityWeight' in range 1-100 for "soft" antiAffinity option.
+  # 'affinity' option can be used to defined any custom nodeAffinity/podAffinity/podAntiAffinity rules.
+  antiAffinity: "off"
+  antiAffinityWeight: 1
+  affinity: {}
+    # nodeAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #     nodeSelectorTerms:
+    #     - matchExpressions:
+    #       - key: kubernetes.io/hostname
+    #         operator: In
+    #         values:
+    #         - gke-gke-blr-default-pool-06a23412-0dkt
+
 
 ### ---------------------------
 ### Alertmanager Configuration
@@ -395,6 +449,33 @@ alertmanager:
     # requests:
     #   cpu: 1
     #   memory: 1Gi
+
+  # Tolerations and Taints (For Alertmanager Pods)
+  tolerations: []
+    # - key: "type"
+    #   operator: "Equal"
+    #   value: "monitoring"
+    #   effect: "NoSchedule"
+
+  # Node Selector (For Alertmanager Pods)
+  nodeSelector: {}
+
+  # Affinity / AntiAffinity configurations (For Alertmanager Pods)
+  # Setting 'antiAffinity' option will prevent two pods of the same release be scheduled on the same node.
+  # 'antiAffinity' levels can be "off" (not set), "soft" (preferredDuringSchedulingIgnoredDuringExecution) and "hard" (requiredDuringSchedulingIgnoredDuringExecution)
+  # Set a desired 'antiAffinityWeight' in range 1-100 for "soft" antiAffinity option.
+  # 'affinity' option can be used to defined any custom nodeAffinity/podAffinity/podAntiAffinity rules.
+  antiAffinity: "off"
+  antiAffinityWeight: 1
+  affinity: {}
+    # nodeAffinity:
+    #   requiredDuringSchedulingIgnoredDuringExecution:
+    #     nodeSelectorTerms:
+    #     - matchExpressions:
+    #       - key: kubernetes.io/hostname
+    #         operator: In
+    #         values:
+    #         - gke-gke-blr-default-pool-06a23412-0dkt
 
   # Alertmanager configuration file path on helm "client" machine (from where the user is running 'helm install')
   # alertmanagerConfFilePath:

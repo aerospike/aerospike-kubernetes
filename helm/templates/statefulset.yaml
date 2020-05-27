@@ -26,6 +26,7 @@ metadata:
     app: {{ template "aerospike.name" . }}
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     release: {{ .Release.Name }}
+    unique-app: {{ .Release.Name }}-aerospike
 spec:
   serviceName: {{ template "aerospike.fullname" . }}
   selector:
@@ -33,6 +34,7 @@ spec:
       app: {{ template "aerospike.name" . }}
       chart: {{ .Chart.Name }}-{{ .Chart.Version }}
       release: {{ .Release.Name }}
+      unique-app: {{ .Release.Name }}-aerospike
   replicas: {{ .Values.dbReplicas }}
   template:
     metadata:
@@ -54,10 +56,10 @@ spec:
             - topologyKey: "kubernetes.io/hostname"
               labelSelector:
                 matchExpressions:
-                - key: release
+                - key: unique-app
                   operator: In
                   values:
-                  - {{ .Release.Name }}
+                  - {{ .Release.Name }}-aerospike
       {{- else if eq .Values.antiAffinity "soft" }}
       affinity:
       {{- with .Values.affinity  }}
@@ -70,10 +72,10 @@ spec:
                 topologyKey: kubernetes.io/hostname
                 labelSelector:
                   matchExpressions:
-                  - key: release
+                  - key: unique-app
                     operator: In
                     values:
-                    - {{ .Release.Name }}
+                    - {{ .Release.Name }}-aerospike
       {{- else}}
       {{- with .Values.affinity }}
       affinity: {{ toYaml . | nindent 8 }}
