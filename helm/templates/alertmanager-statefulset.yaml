@@ -25,6 +25,7 @@ metadata:
     chart: {{ .Chart.Name }}-{{ .Chart.Version }}
     release: {{ .Release.Name }}
     app.kubernetes.io/component: alertmanager
+    unique-app: {{ .Release.Name }}-alertmanager
 spec:
   serviceName: {{ .Release.Name }}-alertmanager-operated
   replicas: {{ .Values.alertmanager.replicas }}
@@ -44,6 +45,47 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: {{ if .Values.rbac.create }}{{ template "aerospike.fullname" . }}{{ else }}{{ .Values.rbac.serviceAccountName }}{{ end }}
+      {{- if eq .Values.alertmanager.antiAffinity "hard" }}
+      affinity:
+      {{- with .Values.alertmanager.affinity  }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchExpressions:
+                - key: unique-app
+                  operator: In
+                  values:
+                  - {{ .Release.Name }}-alertmanager
+      {{- else if eq .Values.alertmanager.antiAffinity "soft" }}
+      affinity:
+      {{- with .Values.alertmanager.affinity  }}
+{{ toYaml . | indent 8 }}
+      {{- end }}
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: {{ .Values.alertmanager.antiAffinityWeight }}
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                  - key: unique-app
+                    operator: In
+                    values:
+                    - {{ .Release.Name }}-alertmanager
+      {{- else}}
+      {{- with .Values.alertmanager.affinity }}
+      affinity: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- end }}
+      {{- with .Values.alertmanager.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.alertmanager.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: prometheus-alertmanager
         image: "{{ .Values.alertmanager.image.repository }}:{{ .Values.alertmanager.image.tag }}"

@@ -90,7 +90,7 @@ Note that the `storageclass` configured here is `aerospike-ssds`. We will use th
 
 ### Create and deploy ConfigMap object
 
-Copy [on-start.sh](../../configs/on-start.sh) and [install.sh](../../configs/install.sh) scripts into the [configmap](configmap) directory. These scripts are used by the init container. Now the [configmap](configmap) directory will contain three files - `aerospike.template.conf`, `install.sh` and `on-start.sh`.
+The [configmap](configmap) directory contains the Aerospike configuration file template for this example - `aerospike.template.conf`.
 
 Create configMap object,
 
@@ -161,10 +161,10 @@ $ kubectl create -f statefulset.yaml
     - metadata:
         name: data-dev
         labels: *AerospikeDeploymentLabels
-        spec:
+      spec:
         volumeMode: Block
         accessModes:
-            - ReadWriteOnce
+          - ReadWriteOnce
         storageClassName: aerospike-ssds
         resources:
             requests:
@@ -174,8 +174,8 @@ $ kubectl create -f statefulset.yaml
     ```sh
     .....
     volumeDevices:
-        - name: data-dev
-          devicePath: /dev/xvdb
+      - name: data-dev
+        devicePath: /dev/xvdb
     ....
     ```
 
