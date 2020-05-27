@@ -1,13 +1,14 @@
 [Agent]
-update_interval = ${AGENT_UPDATE_INTERVAL}
+
 # File paths should be double quoted.
 # Certificate file for the metric servers for prometheus
 cert_file = "${AGENT_CERT_FILE}"
+
 # Key file for the metric servers for prometheus
 key_file = "${AGENT_KEY_FILE}"
 
-# tags to append to the prometheus metrics
-tags=[${AGENT_TAGS}]
+# labels to add to the prometheus metrics for e.g. labels={zone="asia-south1-a", platform="google compute engine"}
+labels = {${METRIC_LABELS}}
 
 bind = "${AGENT_BIND_HOST}:${AGENT_BIND_PORT}"
 
@@ -17,28 +18,55 @@ timeout = ${AGENT_TIMEOUT}
 # debug level can be info|warning,warn|error,err|debug
 log_level = "${AGENT_LOG_LEVEL}"
 
+# Basic HTTP authentication for '/metrics'.
+basic_auth_username="${BASIC_AUTH_USERNAME}"
+basic_auth_password="${BASIC_AUTH_PASSWORD}"
+
 [Aerospike]
 db_host="${AS_HOST}"
 db_port=${AS_PORT}
 
 # certificate file
 cert_file="${AS_CERT_FILE}"
+
 # key file
 key_file="${AS_KEY_FILE}"
+
+# Passphrase for encrypted key_file. Supports below formats,
+# 1. Passphrase directly                 - "<passphrase>"
+# 2. Passphrase via file                 - "file:<file-that-contains-passphrase>"
+# 3. Passphrase via environment variable - "env:<environment-variable-that-holds-passphrase>"
+key_file_passphrase="${AS_KEY_FILE_PASSPHRASE}"
+
 # node TLS name for authentication
 node_tls_name="${AS_NODE_TLS_NAME}"
+
 # root certificate file
 root_ca="${AS_ROOT_CA}"
 
 # authentication mode: internal (for server), external (LDAP, etc.)
 auth_mode="${AS_AUTH_MODE}"
+
 # database user
 user="${AS_AUTH_USER}"
+
 # database password
 password="${AS_AUTH_PASSWORD}"
 
-# ticker interval for requesting stats fro mthe database node
-resolution=${TICKER_INTERVAL}
-
 # timeout for sending commands to the server node in seconds
 timeout=${TICKER_TIMEOUT}
+
+# Metrics Whitelist - If specified, only these metrics will be scraped. An empty list will exclude all metrics.
+# Commenting out the below whitelist configs will disable whitelisting (i.e. all metrics will be scraped).
+
+# Namespace metrics whitelist
+# namespace_metrics_whitelist=[${NAMESPACE_METRICS_WHITELIST}]
+
+# Set metrics whitelist
+# set_metrics_whitelist=[${SET_METRICS_WHITELIST}]
+
+# Node metrics whitelist
+# node_metrics_whitelist=[${NODE_METRICS_WHITELIST}]
+
+# XDR metrics whitelist (only for server versions 5.0 and above)
+# xdr_metrics_whitelist=[${XDR_METRICS_WHITELIST}]

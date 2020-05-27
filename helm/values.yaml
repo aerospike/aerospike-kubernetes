@@ -38,7 +38,7 @@ clusterServiceDnsDomain: cluster.local
 
 image:
   repository: aerospike/aerospike-server
-  tag: 4.9.0.3
+  tag: 5.0.0.4
 
 ### -------------------------------
 ### Aerospike init container image
@@ -140,6 +140,20 @@ affinity: {}
   #         values:
   #         - gke-gke-blr-default-pool-06a23412-0dkt
 
+# Tolerations and Taints
+tolerations: {}
+  # - key: "key1"
+  #   operator: "Equal"
+  #   value: "value1"
+  #   effect: "NoSchedule"
+  # - key: "key1"
+  #   operator: "Equal"
+  #   value: "value1"
+  #   effect: "NoExecute"
+
+# Node Selector
+nodeSelector: {}
+
 # Define storage devices for aerospike nodes (pods)
 persistenceStorage: {}
 #  - mountPath: /opt/aerospike/data
@@ -212,19 +226,23 @@ exporterImage:
   tag: 1.0.0
 
 exporter: {}
-  # agentUpdateInterval: 5
-  # agentTags: "'agent', 'aerospike'"
+  # metricLabels: "zone='asia-south1-a', platform='Google Kubernetes Engine'"
   # agentBindHost: ""
   # agentBindPort: 9145
   # agentTimeout: 10
   # agentLogLevel: "info"
-  # asHost: "localhost"
-  # asPort: 3000
-  # tickerInterval: 5
+  # httpBasicAuthUsername: ""
+  # httpBasicAuthPassword: ""
+  # aerospikeHost: "localhost"
+  # aerospikePort: 3000
   # tickerTimeout: 5
-  # asAuthMode: ""
-  # asAuthUser: ""
-  # asAuthPassword: ""
+  # aerospikeAuthMode: ""
+  # aerospikeAuthUser: ""
+  # aerospikeAuthPassword: ""
+  # namespaceMetricsWhitelist: ""
+  # setMetricsWhitelist: ""
+  # nodeMetricsWhitelist: ""
+  # xdrMetricsWhitelist: ""
 
 
 ### -------------------------
@@ -243,6 +261,10 @@ prometheus:
   podManagementPolicy: "Parallel"
   updateStrategy:
     type: "RollingUpdate"
+
+  # Prometheus scrape_interval and evaluation_interval
+  scrapeInterval: "15s"
+  evaluationInterval: "15s"
 
   # Prometheus docker image
   image:

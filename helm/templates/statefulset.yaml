@@ -83,7 +83,13 @@ spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds | default 120 }}
+      {{- with .Values.tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: aerospike
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -198,9 +204,9 @@ spec:
             fieldRef:
               fieldPath: status.podIP
         - name: AS_HOST
-          value: {{ .Values.exporter.asHost | default "localhost" | quote }}
+          value: {{ .Values.exporter.aerospikeHost | default "localhost" | quote }}
         - name: AS_PORT
-          value: {{ .Values.exporter.asPort | default 3000 | quote }}
+          value: {{ .Values.exporter.aerospikePort | default 3000 | quote }}
         - name: AGENT_BIND_HOST
           value: {{ .Values.exporter.agentBindHost | default "" | quote }}
         - name: AGENT_BIND_PORT
@@ -209,20 +215,28 @@ spec:
           value: {{ .Values.exporter.agentLogLevel | default "info" | quote }}
         - name: AGENT_TIMEOUT
           value: {{ .Values.exporter.agentTimeout | default 10 | quote }}
-        - name: AGENT_TAGS
-          value: {{ .Values.exporter.agentTags | default "" | quote }}
-        - name: AGENT_UPDATE_INTERVAL
-          value: {{ .Values.exporter.agentUpdateInterval | default 5 |quote }}
-        - name: TICKER_INTERVAL
-          value: {{ .Values.exporter.tickerInterval | default 5 | quote }}
+        - name: METRIC_LABELS
+          value: {{ .Values.exporter.metricLabels | default "" | quote }}
         - name: TICKER_TIMEOUT
           value: {{ .Values.exporter.tickerTimeout | default 5 | quote }}
         - name: AS_AUTH_MODE
-          value: {{ .Values.exporter.asAuthMode | default "" | quote }}
+          value: {{ .Values.exporter.aerospikeAuthMode | default "" | quote }}
         - name: AS_AUTH_USER
-          value: {{ .Values.exporter.asAuthUser | default "" | quote }}
+          value: {{ .Values.exporter.aerospikeAuthUser | default "" | quote }}
         - name: AS_AUTH_PASSWORD
-          value: {{ .Values.exporter.asAuthPassword | default "" | quote }}
+          value: {{ .Values.exporter.aerospikeAuthPassword | default "" | quote }}
+        - name: NAMESPACE_METRICS_WHITELIST
+          value: {{ .Values.exporter.namespaceMetricsWhitelist | default "" | quote }}
+        - name: SET_METRICS_WHITELIST
+          value: {{ .Values.exporter.setMetricsWhitelist | default "" | quote }}
+        - name: NODE_METRICS_WHITELIST
+          value: {{ .Values.exporter.nodeMetricsWhitelist | default "" | quote }}
+        - name: XDR_METRICS_WHITELIST
+          value: {{ .Values.exporter.xdrMetricsWhitelist | default "" | quote }}
+        - name: BASIC_AUTH_USERNAME
+          value: {{ .Values.exporter.httpBasicAuthUsername | default "" | quote }}
+        - name: BASIC_AUTH_PASSWORD
+          value: {{ .Values.exporter.httpBasicAuthPassword | default "" | quote }}
       {{- end }}
       initContainers:
       - name: aerospike-init
