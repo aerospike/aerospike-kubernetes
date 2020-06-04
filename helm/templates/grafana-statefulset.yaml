@@ -83,6 +83,7 @@ spec:
       {{- with .Values.grafana.nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.grafana.terminationGracePeriodSeconds | default 120 }}
       initContainers:
       - name: "init-chmod-data"
         image: debian:9
@@ -137,14 +138,20 @@ spec:
           httpGet:
             path: /api/health
             port: {{ .Values.grafana.httpPort | default 3000 }}
+          initialDelaySeconds: {{ .Values.grafana.livenessProbe.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.grafana.livenessProbe.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.grafana.livenessProbe.timeoutSeconds | default 10 }}
+          successThreshold: {{ .Values.grafana.livenessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.grafana.livenessProbe.failureThreshold | default 10 }}
         readinessProbe:
           httpGet:
             path: /api/health
             port: {{ .Values.grafana.httpPort | default 3000 }}
-          initialDelaySeconds: 60
-          timeoutSeconds: 30
-          failureThreshold: 10
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.grafana.readinessProbe.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.grafana.readinessProbe.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.grafana.readinessProbe.timeoutSeconds | default 10 }}
+          successThreshold: {{ .Values.grafana.readinessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.grafana.readinessProbe.failureThreshold | default 10 }}
         resources:
 {{ toYaml .Values.grafana.resources | indent 10 }}
         env:

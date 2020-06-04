@@ -92,9 +92,13 @@ spec:
       {{- with .Values.nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
+      securityContext:
+{{ toYaml .Values.podSecurityContext | indent 8 }}
       containers:
       - name: aerospike
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        securityContext:
+{{ toYaml .Values.securityContext | indent 10 }}
         ports:
         - containerPort: {{ .Values.aerospikeClientPort | default 3000 }}
           name: aero-client
@@ -118,14 +122,19 @@ spec:
             - /bin/sh
             - -c
             - "asinfo -h localhost -p {{ .Values.aerospikeClientPort | default 3000 }} -v build"
-          initialDelaySeconds: 30
-          periodSeconds: 60
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds | default 30 }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds | default 1 }}
+          successThreshold: {{ .Values.livenessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold | default 3 }}
         readinessProbe:
           tcpSocket:
               port: {{ .Values.aerospikeClientPort | default 3000 }}
-          initialDelaySeconds: 10
-          timeoutSeconds: 1
-          periodSeconds: 10
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds | default 1 }}
+          successThreshold: {{ .Values.readinessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold | default 3 }}
         volumeMounts:
         - name: confdir
           mountPath: /etc/aerospike

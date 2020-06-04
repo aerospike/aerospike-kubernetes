@@ -86,6 +86,7 @@ spec:
       {{- with .Values.alertmanager.nodeSelector }}
       nodeSelector: {{- toYaml . | nindent 8 }}
       {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.alertmanager.terminationGracePeriodSeconds | default 120 }}
       containers:
       - name: prometheus-alertmanager
         image: "{{ .Values.alertmanager.image.repository }}:{{ .Values.alertmanager.image.tag }}"
@@ -108,12 +109,24 @@ spec:
             name: http
           - containerPort: {{ .Values.alertmanager.meshPort | default 9094 }}
             name: mesh
+        livenessProbe:
+          httpGet:
+            path: /#/status
+            port: {{ .Values.alertmanager.webPort | default 9093 }}
+          initialDelaySeconds: {{ .Values.alertmanager.livenessProbe.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.alertmanager.livenessProbe.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.alertmanager.livenessProbe.timeoutSeconds | default 10 }}
+          successThreshold: {{ .Values.alertmanager.livenessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.alertmanager.livenessProbe.failureThreshold | default 3 }}
         readinessProbe:
           httpGet:
             path: /#/status
             port: {{ .Values.alertmanager.webPort | default 9093 }}
-          initialDelaySeconds: 30
-          timeoutSeconds: 30
+          initialDelaySeconds: {{ .Values.alertmanager.readinessProbe.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.alertmanager.readinessProbe.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.alertmanager.readinessProbe.timeoutSeconds | default 10 }}
+          successThreshold: {{ .Values.alertmanager.readinessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.alertmanager.readinessProbe.failureThreshold | default 3 }}
         resources:
 {{ toYaml .Values.alertmanager.resources | indent 10 }}
         volumeMounts:
