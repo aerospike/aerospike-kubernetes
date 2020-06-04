@@ -29,6 +29,20 @@ dbReplicas: 3 # Also controls number of nodes in the aerospike cluster.
 # Number of seconds to wait after SIGTERM before force killing the pod.
 terminationGracePeriodSeconds: 120
 
+# liveness and readiness probe parameters (for aerospike containers)
+livenessProbe: {}
+  # initialDelaySeconds: 30
+  # periodSeconds: 30
+  # timeoutSeconds: 1
+  # successThreshold: 1
+  # failureThreshold: 3
+readinessProbe: {}
+  # initialDelaySeconds: 30
+  # periodSeconds: 10
+  # timeoutSeconds: 1
+  # successThreshold: 1
+  # failureThreshold: 3
+
 # K8s Cluster Service DNS Domain
 clusterServiceDnsDomain: cluster.local
 
@@ -191,6 +205,12 @@ resources: {}
   #   cpu: 1
   #   memory: 1Gi
 
+# Aerospike pod security context
+podSecurityContext: {}
+
+# Aerospike container security context
+securityContext: {}
+
 ### -----------------------------------------------------------
 ### Dynamic configuration - Used during 'helm install...' etc.
 ### -----------------------------------------------------------
@@ -261,6 +281,20 @@ prometheus:
   podManagementPolicy: "Parallel"
   updateStrategy:
     type: "RollingUpdate"
+
+  # liveness and readiness probe parameters (for prometheus containers)
+  livenessProbe: {}
+  # initialDelaySeconds: 30
+  # periodSeconds: 10
+  # timeoutSeconds: 10
+  # successThreshold: 1
+  # failureThreshold: 3
+  readinessProbe: {}
+  # initialDelaySeconds: 30
+  # periodSeconds: 10
+  # timeoutSeconds: 10
+  # successThreshold: 1
+  # failureThreshold: 3
 
   # Prometheus scrape_interval and evaluation_interval
   scrapeInterval: "15s"
@@ -342,6 +376,23 @@ grafana:
     repository: grafana/grafana
     tag: 6.3.2
 
+  # Grafana statefulset configs
+  terminationGracePeriodSeconds: 120
+
+  # liveness and readiness probe parameters (for grafana containers)
+  livenessProbe: {}
+  # initialDelaySeconds: 30
+  # periodSeconds: 10
+  # timeoutSeconds: 10
+  # successThreshold: 1
+  # failureThreshold: 10
+  readinessProbe: {}
+  # initialDelaySeconds: 30
+  # periodSeconds: 10
+  # timeoutSeconds: 10
+  # successThreshold: 1
+  # failureThreshold: 10
+
   # Define storage for grafana data
   persistenceStorage:
     # mountPath: /var/lib/grafana
@@ -414,9 +465,24 @@ alertmanager:
   meshPort: 9094
 
   # Alertmanager statefulset configs
+  terminationGracePeriodSeconds: 120
   podManagementPolicy: "OrderedReady"
   updateStrategy:
     type: "RollingUpdate"
+
+  # liveness and readiness probe parameters (for grafana containers)
+  livenessProbe: {}
+  # initialDelaySeconds: 30
+  # periodSeconds: 10
+  # timeoutSeconds: 10
+  # successThreshold: 1
+  # failureThreshold: 10
+  readinessProbe: {}
+  # initialDelaySeconds: 30
+  # periodSeconds: 10
+  # timeoutSeconds: 10
+  # successThreshold: 1
+  # failureThreshold: 10
 
   # Alertmanager docker image
   image:

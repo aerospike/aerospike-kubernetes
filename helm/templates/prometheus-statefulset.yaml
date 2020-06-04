@@ -118,14 +118,20 @@ spec:
           httpGet:
             path: /-/ready
             port: {{ .Values.prometheus.serverPort | default 9090 }}
-          initialDelaySeconds: 30
-          timeoutSeconds: 30
+          initialDelaySeconds: {{ .Values.prometheus.readinessProbe.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.prometheus.readinessProbe.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.prometheus.readinessProbe.timeoutSeconds | default 10 }}
+          successThreshold: {{ .Values.prometheus.readinessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.prometheus.readinessProbe.failureThreshold | default 3 }}
         livenessProbe:
           httpGet:
             path: /-/healthy
             port: {{ .Values.prometheus.serverPort | default 9090 }}
-          initialDelaySeconds: 30
-          timeoutSeconds: 30
+          initialDelaySeconds: {{ .Values.prometheus.livenessProbe.initialDelaySeconds | default 30 }}
+          periodSeconds: {{ .Values.prometheus.livenessProbe.periodSeconds | default 10 }}
+          timeoutSeconds: {{ .Values.prometheus.livenessProbe.timeoutSeconds | default 10 }}
+          successThreshold: {{ .Values.prometheus.livenessProbe.successThreshold | default 1 }}
+          failureThreshold: {{ .Values.prometheus.livenessProbe.failureThreshold | default 3 }}
         resources:
 {{ toYaml .Values.prometheus.resources | indent 10 }}
         volumeMounts:
@@ -143,7 +149,7 @@ spec:
         - name: {{ .Values.prometheus.volume.name | quote }}
           mountPath: {{ .Values.prometheus.volume.mountPath | quote }}
         {{- end }}
-      terminationGracePeriodSeconds: {{ .Values.prometheus.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.prometheus.terminationGracePeriodSeconds | default 120 }}
       volumes:
       - name: config-volume
         configMap:
