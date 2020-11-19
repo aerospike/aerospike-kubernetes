@@ -3,7 +3,25 @@ entries:
   aerospike:
   - apiVersion: v1
     appVersion: 5.0.0.4
-    created: "2020-05-27T05:06:43.771607+05:30"
+    created: "2020-11-19T15:11:12.289682+01:00"
+    description: A Helm chart for Aerospike Server Community Edition on Kubernetes
+    digest: ee5f6f4314385623c5fe7acd3eb4f114eb0bf8edea165c24600ba05453cfa7df
+    icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
+    maintainers:
+    - email: kesan@aerospike.com
+      name: spkesan
+    name: aerospike
+    sources:
+    - https://github.com/aerospike/aerospike-server.docker
+    - https://github.com/aerospike/aerospike-kubernetes
+    - https://github.com/aerospike/aerospike-kubernetes-init
+    - https://github.com/aerospike/aerospike-prometheus-exporter
+    urls:
+    - aerospike-5.1.0.tgz
+    version: 5.1.0
+  - apiVersion: v1
+    appVersion: 5.0.0.4
+    created: "2020-11-19T15:11:12.288414+01:00"
     description: A Helm chart for Aerospike Server Community Edition on Kubernetes
     digest: 8c550f99b22a25bc593c2b4a45f3992f0f4c5f4afd00366812be4b4e6dda23e6
     icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
@@ -17,11 +35,11 @@ entries:
     - https://github.com/aerospike/aerospike-kubernetes-init
     - https://github.com/aerospike/aerospike-prometheus-exporter
     urls:
-    - https://aerospike.github.io/aerospike-kubernetes/aerospike-5.0.0.tgz
+    - aerospike-5.0.0.tgz
     version: 5.0.0
   - apiVersion: v1
     appVersion: 4.9.0.8
-    created: "2020-05-27T05:06:43.769771+05:30"
+    created: "2020-11-19T15:11:12.286469+01:00"
     description: A Helm chart for Aerospike Server Community Edition on Kubernetes
     digest: 36fe1439f962b3500299857d4f100defdc86eea975c2dca80891c968e24bb58f
     icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
@@ -35,11 +53,11 @@ entries:
     - https://github.com/aerospike/aerospike-kubernetes-init
     - https://github.com/aerospike/aerospike-prometheus-exporter
     urls:
-    - https://aerospike.github.io/aerospike-kubernetes/aerospike-4.9.0.tgz
+    - aerospike-4.9.0.tgz
     version: 4.9.0
   - apiVersion: v1
     appVersion: 4.8.0.11
-    created: "2020-05-27T05:06:43.766233+05:30"
+    created: "2020-11-19T15:11:12.284506+01:00"
     description: A Helm chart for Aerospike Server Community Edition on Kubernetes
     digest: 0cd07f231e5c8095d470932463ab010663578e78b60b209b8fde4c80cce1bb63
     icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
@@ -53,11 +71,11 @@ entries:
     - https://github.com/aerospike/aerospike-kubernetes-init
     - https://github.com/aerospike/aerospike-prometheus-exporter
     urls:
-    - https://aerospike.github.io/aerospike-kubernetes/aerospike-4.8.0.tgz
+    - aerospike-4.8.0.tgz
     version: 4.8.0
   - apiVersion: v1
     appVersion: 4.7.0.15
-    created: "2020-05-27T05:06:43.763204+05:30"
+    created: "2020-11-19T15:11:12.28293+01:00"
     description: A Helm chart for Aerospike Server Community Edition on Kubernetes
     digest: f196168c2927b0fe4948b150c42ec2d931895fe8e176651ca111fc270652be43
     icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
@@ -71,11 +89,11 @@ entries:
     - https://github.com/aerospike/aerospike-kubernetes-init
     - https://github.com/aerospike/aerospike-prometheus-exporter
     urls:
-    - https://aerospike.github.io/aerospike-kubernetes/aerospike-4.7.0.tgz
+    - aerospike-4.7.0.tgz
     version: 4.7.0
   - apiVersion: v1
     appVersion: 4.6.0.17
-    created: "2020-05-27T05:06:43.760321+05:30"
+    created: "2020-11-19T15:11:12.281311+01:00"
     description: A Helm chart for Aerospike Server Community Edition on Kubernetes
     digest: 9bf0b8ae13477b95abd106829a7cfc1f492ae956063b478aefebbf675f7ed102
     icon: https://avatars0.githubusercontent.com/u/2214313?s=200&v=4
@@ -89,6 +107,6 @@ entries:
     - https://github.com/aerospike/aerospike-kubernetes-init
     - https://github.com/aerospike/aerospike-prometheus-exporter
     urls:
-    - https://aerospike.github.io/aerospike-kubernetes/aerospike-4.6.0.tgz
+    - aerospike-4.6.0.tgz
     version: 4.6.0
-generated: "2020-05-27T05:06:43.75199+05:30"
+generated: "2020-11-19T15:11:12.278187+01:00"
