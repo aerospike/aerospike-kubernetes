@@ -168,14 +168,14 @@ tolerations: []
 # Node Selector (For Aerospike Pods)
 nodeSelector: {}
 
-# Extra labels for the StatefulSet
+# Extra labels for the Aerospike StatefulSet
 labels: {}
-# Extra annotations for the StatefulSet
+# Extra annotations for the Aerospike StatefulSet
 annotations: {}
 
-# Extra labels for the pods
+# Extra labels for the Aerospike pods
 podLabels: {}
-# Extra annotations for the pods
+# Extra annotations for the Aerospike pods
 podAnnotations: {}
 
 # Define storage devices for aerospike nodes (pods)
