@@ -1,6 +1,6 @@
 # aerospike-kubernetes
 
-This project uses Aerospike Server Community Edition. For Aerospike Server Enterprise Edition, please refer [aerospike/aerospike-kubernetes-enterprise](https://github.com/aerospike/aerospike-kubernetes-enterprise). 
+This project uses Aerospike Server Community Edition. For Aerospike Server Enterprise Edition, please refer [aerospike/aerospike-kubernetes-enterprise](https://github.com/aerospike/aerospike-kubernetes-enterprise).
 
 This project contains the init container used in Kubernetes (k8s) and the Aerospike StatefulSet definition.
 These manifests will allow you to deploy a fully formed Aerospike cluster in minutes.
@@ -24,6 +24,7 @@ export AEROSPIKE_NAMESPACE=test
 export AEROSPIKE_REPL=2
 export AEROSPIKE_MEM=1
 export AEROSPIKE_TTL=0
+export AEROSPIKE_NSUP_PERIOD=0 # if AEROSPIKE_TTL is not 0, AEROSPIKE_NSUP_PERIOD should not be 0.
 ```
 
 All `AEROSPIKE_*` parameters except AEROSPIKE\_NODES, AEROSPIKE_MEM are optional. Default values are listed above.
