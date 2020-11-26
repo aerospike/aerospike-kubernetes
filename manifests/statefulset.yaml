@@ -80,7 +80,7 @@ spec:
         - name: DEFAULT_TTL
           value: "$AEROSPIKE_TTL"
         - name: NSUP_PERIOD
-          value: "$AEROSPIKE_NSUP"
+          value: "$AEROSPIKE_NSUP_PERIOD"
         # Downward API:
         - name: MY_POD_NAME
           valueFrom:

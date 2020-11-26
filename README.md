@@ -24,7 +24,7 @@ export AEROSPIKE_NAMESPACE=test
 export AEROSPIKE_REPL=2
 export AEROSPIKE_MEM=1
 export AEROSPIKE_TTL=0
-export AEROSPIKE_NSUP=0 # if AEROSPIKE_TTL is not 0, AEROSPIKE_NSUP should not be 0.
+export AEROSPIKE_NSUP_PERIOD=0 # if AEROSPIKE_TTL is not 0, AEROSPIKE_NSUP_PERIOD should not be 0.
 ```
 
 All `AEROSPIKE_*` parameters except AEROSPIKE\_NODES, AEROSPIKE_MEM are optional. Default values are listed above.
