@@ -21,7 +21,7 @@ kind: ClusterRoleBinding
 metadata:
   labels:
     app: {{ template "aerospike.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    chart: {{ .Chart.Name }}
     release: {{ .Release.Name }}
   name: {{ template "aerospike.fullname" . }}
 roleRef:

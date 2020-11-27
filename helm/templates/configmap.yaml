@@ -24,7 +24,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "aerospike.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    chart: {{ .Chart.Name }}
     release: {{ .Release.Name }}
 data:
   # Use dynamically supplied aerospike.template.conf over the existing one.

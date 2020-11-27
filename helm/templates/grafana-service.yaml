@@ -23,7 +23,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: {{ template "aerospike.name" . }}-grafana
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    chart: {{ .Chart.Name }}
     release: {{ .Release.Name }}
     app.kubernetes.io/component: grafana
 spec:

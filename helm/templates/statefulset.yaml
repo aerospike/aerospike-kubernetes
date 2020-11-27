@@ -24,7 +24,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels: &AerospikeDeploymentLabels
     app: {{ template "aerospike.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    chart: {{ .Chart.Name }}
     release: {{ .Release.Name }}
     unique-app: {{ .Release.Name }}-aerospike
     {{- with .Values.labels }}{{ toYaml . | nindent 4 }}{{ end }}
@@ -36,7 +36,7 @@ spec:
   selector:
     matchLabels:
       app: {{ template "aerospike.name" . }}
-      chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+      chart: {{ .Chart.Name }}
       release: {{ .Release.Name }}
       unique-app: {{ .Release.Name }}-aerospike
   replicas: {{ .Values.dbReplicas }}
@@ -321,6 +321,9 @@ spec:
     - metadata:
         name: {{ $pv.name }}
         labels: *AerospikeDeploymentLabels
+        {{- with $.Values.annotations }}
+        annotations: {{- toYaml . | nindent 10 }}
+        {{- end }}
       spec:
         volumeMode: {{ $pv.volumeMode }}
         accessModes:

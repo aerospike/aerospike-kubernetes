@@ -22,7 +22,7 @@ metadata:
   name: {{ .Release.Name }}-alertmanager-operated
   labels:
     app: {{ template "aerospike.name" . }}-alertmanager
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    chart: {{ .Chart.Name }}
     release: {{ .Release.Name }}
     app.kubernetes.io/component: alertmanager
 spec:
