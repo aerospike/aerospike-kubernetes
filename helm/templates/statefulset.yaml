@@ -291,6 +291,8 @@ spec:
           value: {{ .Values.aerospikeHeartbeatPort | default 3002 | quote }}
         - name: AUTO_GENERATE_NODE_IDS
           value: {{ .Values.autoGenerateNodeIds | default false | quote }}
+        - name: NODE_ID_PREFIX
+          value: {{ .Values.nodeIDPrefix | default "a" | quote }}
         - name: PLATFORM
           value: {{ .Values.platform | quote }}
         - name: HOST_NETWORK

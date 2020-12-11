@@ -69,6 +69,7 @@ initImage:
 
 # Auto generate and assign node-id(s) based on Pod's Ordinal Index.
 autoGenerateNodeIds: false
+# nodeIDPrefix: "a" # (optional) must be in hex only
 
 # Default Namespace related configuration
 
