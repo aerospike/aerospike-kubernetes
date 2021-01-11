@@ -37,7 +37,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   labels:
     app: {{ template "aerospike.name" $dot }}
-    chart: {{ $.Chart.Name }}-{{ $.Chart.Version }}
+    chart: {{ $.Chart.Name }}
     release: {{ $.Release.Name }}
 spec:
   externalIPs:
@@ -46,7 +46,7 @@ spec:
     - port: {{ $ip := index $.Values.externalIpEndpoints $podIndex }} {{ $ip.Port }}
       targetPort: {{ $.Values.aerospikeClientPort | default 3000 }}
       protocol: TCP
-      name: client
+      name: aerospike-plain
   selector:
     statefulset.kubernetes.io/pod-name: "{{ $.Release.Name }}-{{ $.Chart.Name }}-{{ $podIndex }}"
 {{ end -}}
@@ -66,7 +66,7 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   labels:
     app: {{ template "aerospike.name" $dot }}
-    chart: {{ $.Chart.Name }}-{{ $.Chart.Version }}
+    chart: {{ $.Chart.Name }}
     release: {{ $.Release.Name }}
 spec:
   externalIPs:
@@ -75,7 +75,7 @@ spec:
     - port: {{ $ip := index $.Values.externalIPServices.externalIPEndpoints $podIndex }} {{ $ip.Port }}
       targetPort: {{ $.Values.aerospikeClientPort | default 3000 }}
       protocol: TCP
-      name: client
+      name: aerospike-plain
   selector:
     statefulset.kubernetes.io/pod-name: "{{ $.Release.Name }}-{{ $.Chart.Name }}-{{ $podIndex }}"
 {{ end -}}

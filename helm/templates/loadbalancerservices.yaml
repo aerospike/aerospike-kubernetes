@@ -26,13 +26,14 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   labels:
     app: {{ template "aerospike.name" $dot }}
-    chart: {{ $.Chart.Name }}-{{ $.Chart.Version }}
+    chart: {{ $.Chart.Name }}
     release: {{ $.Release.Name }}
 spec:
   type: LoadBalancer
   externalTrafficPolicy: Local
   ports:
-  - port: {{ $.Values.aerospikeClientPort | default 3000 }}
+  - name: aerospike-plain
+    port: {{ $.Values.aerospikeClientPort | default 3000 }}
     targetPort: {{ $.Values.aerospikeClientPort | default 3000 }}
   selector:
     statefulset.kubernetes.io/pod-name: "{{ $.Release.Name }}-{{ $.Chart.Name }}-{{ $podIndex }}"
