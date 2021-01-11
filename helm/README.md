@@ -5,7 +5,7 @@ Implements a dynamically scalable Aerospike cluster using Kubernetes StatefulSet
 
 ## Pre Requisites
 
-- Kubernetes 1.8+
+- Kubernetes 1.13+
 
 ## Usage:
 
@@ -21,7 +21,7 @@ helm repo add aerospike https://aerospike.github.io/aerospike-kubernetes
 helm install aerospike-release aerospike/aerospike
 ```
 
-All the configurations defined in [`values.yaml`](values.yaml) or in the [configuration section](#configuration) can be set using `--set` or `--set-file` option. A custom `values.yaml` file can also be provided using `-f` option.
+All the configurations defined in [`values.yaml`](values.yaml) (or in the [configuration section](#configuration)) can be set using `--set` or `--set-file` option. A custom `values.yaml` file can also be provided using `-f` option.
 
 For example,
 
@@ -29,46 +29,11 @@ For example,
 helm install aerospike-release aerospike/aerospike --set dbReplicas=5
 ```
 
-#### For Helm v2,
+For Helm v2,
 
 ```sh
 helm install --name aerospike-release aerospike/aerospike --set dbReplicas=5
 ```
-
-### Use a custom aerospike.conf file or template
-
-- To override the default `aerospike.template.conf`, set `confFilePath` to point to the custom `aerospike.conf` file or template.
-
-	> `confFilePath` should be a file path on helm "client" machine (where the user is running the command `helm install`).
-
-- The custom `aerospike.conf` file or template must contain `# mesh-seed-placeholder` in `heartbeat` configuration to populate mesh configuration during peer discovery. For example,
-
-	```sh
-	....
-		heartbeat {
-
-			address any
-			mode mesh
-			port 3002
-
-			# mesh-seed-placeholder
-
-			interval 150
-			timeout 10
-		}
-	.....
-	```
-
-- `confFilePath` can be set using `--set-file` option,
-	```sh
-	helm install aerospike-release aerospike/aerospike \
-				 --set-file confFilePath=/tmp/aerospike_templates/aerospike.template.conf
-	```
-
-### Storage configuration
-
-Aerospike helm chart allows multiple volume mounts (filesystem type) and device mounts (raw block device) to be configured and used with Aerospike Statefulset. Check below [configuration section](#configuration) or [`values.yaml`](https://github.com/aerospike/aerospike-kubernetes/blob/master/helm/values.yaml) file for more details.
-
 
 ### Test Output:
 
@@ -104,6 +69,58 @@ NAME             	REVISION	UPDATED                 	STATUS  	CHART              
 aerospike-release	1       	Fri Mar  6 15:50:33 2020	DEPLOYED	aerospike-5.0.0             5.0.0.4   	default
 ```
 
+### Apply custom Aerospike configuration
+
+- To override the default `aerospike.template.conf`, set `confFilePath` to point to the custom `aerospike.conf` file or template.
+
+	> `confFilePath` should be a file path on helm "client" machine (where the user is running the command `helm install`).
+
+- `confFilePath` can be set using `--set-file` option,
+	```sh
+	helm install aerospike-release aerospike/aerospike \
+				 --set-file confFilePath=/tmp/aerospike_templates/aerospike.template.conf
+	```
+
+### Storage configuration
+
+Aerospike helm chart allows multiple volume mounts (filesystem type) and device mounts (raw block device) to be configured and used with Aerospike Statefulset. Check below [configuration section](#configuration) or [`values.yaml`](https://github.com/aerospike/aerospike-kubernetes/blob/master/helm/values.yaml) file for more details.
+
+### Dynamic storage provisioning
+
+Use `persistenceStorage` configuration to define the volumes that can be provisioned using a storageclass.
+
+```yaml
+persistenceStorage:
+ - mountPath: /opt/aerospike/smd
+   enabled: true
+   name: smd-dir
+   storageClass: standard
+   accessMode: ReadWriteOnce
+   volumeMode: Filesystem
+   size: 1Gi
+ - devicePath: /dev/sdb
+   enabled: true
+   name: data-dev
+   storageClass: ssd
+   accessMode: ReadWriteOnce
+   size: 1Gi
+   volumeMode: Block
+```
+
+### Static provisioning
+
+Use `volumes` configuration to define volumes that needs to be mounted to aerospike pod. Use this option for accessing `secrets`, `hostPath` volumes, sharing `emptyDir` volumes etc.
+
+```yaml
+volumes:
+ - mountPath: /opt/aerospike/data
+   name: data-dir
+   template:
+     hostPath:
+      path: /data
+      type: Directory
+```
+
 ### Expose Aerospike Cluster
 
 Aerospike Cluster can be exposed to client applications or to XDR clients which are outside the K8s network by enabling,
@@ -112,30 +129,30 @@ Aerospike Cluster can be exposed to client applications or to XDR clients which 
 - LoadBalancer Services Per Pod
 - ClusterIP Services with External IPs
 
-### **Host Networking**
+### Host Networking
 
 With host networking enabled, pods will be able to access the node's network. Pod IP will be same as node IP.
 
 > With host networking enabled, the deployment will be limited to one pod per node. If the new pod is scheduled onto the same node, it will fail due to no free ports.
 
-Use `platform` and `hostNetworking` options to expose the Aerospike cluster pods to external client applications. Setting `platform` will fetch external IP of the instances (if any) and add it to [`alternate-access-address`](https://www.aerospike.com/docs/reference/configuration/index.html#alternate-access-address) in `aerospike.conf`.
+Use `hostNetwork.enabled` option to enable host networking and expose the Aerospike cluster pods to external client applications. Set `hostNetwork.useExternalIP` to allow applications to use external IP of the instances to connect to the aerospike cluster. The external IP of the instance will be added as [`alternate-access-address`](https://www.aerospike.com/docs/reference/configuration/index.html#alternate-access-address) in `aerospike.conf`.
 
 For example,
 
 ```sh
 helm install aerospike-release aerospike/aerospike \
-	 		 --set dbReplicas=4 \
-	 		 --set hostNetworking=true \
-	 		 --set platform=gke
+			 --set dbReplicas=4 \
+			 --set hostNetwork.enabled=true \
+			 --set hostNetwork.useExternalIP=true
 ```
 
 For Helm v2,
 
 ```sh
 helm install --name aerospike-release aerospike/aerospike \
-	 		 --set dbReplicas=4 \
-	 		 --set hostNetworking=true \
-	 		 --set platform=gke
+			 --set dbReplicas=4 \
+			 --set hostNetwork.enabled=true \
+			 --set hostNetwork.useExternalIP=true
 ```
 
 Client applications can connect to the Aerospike cluster using instance's external IP (if available) or by using host IP.
@@ -144,28 +161,26 @@ Client applications can connect to the Aerospike cluster using instance's extern
 asadm -h <ExternalIP> -p 3000 --services-alternate
 ```
 
-### **NodePort Services Per Pod**
+### NodePort Services Per Pod
 
 NodePort type exposes the Service on each K8s Node’s IP at a static port (the `NodePort`). Applications will be able to connect to the NodePort Service from outside the K8s cluster by using `<NodeIP>:<NodePort>`.
 
 > With NodePort type services, it allows multiple aerospike pods per K8s host and at the same time expose each aerospike pod.
 
-To enable `NodePort` services per pod, `enableNodePortServices` option must be set to `true`.
+To enable `NodePort` services per pod, set `nodePortServices.enabled` option to `true`.
 Aerospike helm chart will automatically create a `NodePort` type service for each aerospike pod at the time of deployment. Applications can connect to the Aerospike cluster using any one of the `<NodeIP>:<NodePort>` as a seed IP and Port.
 
-Setting `platform` will fetch external IP of the instances (if any) and add it to [`alternate-access-address`](https://www.aerospike.com/docs/reference/configuration/index.html#alternate-access-address) in `aerospike.conf`.
+Set `nodePortServices.useExternalIP` to allow applications to use external IP of the instances to connect to the aerospike cluster. The external IP of the instance will be added as [`alternate-access-address`](https://www.aerospike.com/docs/reference/configuration/index.html#alternate-access-address) in `aerospike.conf`.
 
 > Use `helm upgrade` command to perform scale-up/scale-down when NodePort services are enabled.
-
-A service account with appropriate permissions is required to query the API server and read the `Service` type resources. An existing service account can be specified using `rbac.serviceAccountName`. To let Aerospike helm chart create a new `ServiceAccount` with appropriate `ClusterRole` set `rbac.create` to `true`. This `ServiceAccount` will be used with Aerospike Statefulset, and if monitoring is enabled, also with Prometheus, Grafana and Alertmanager Statefulsets.
 
 Example,
 
 ```sh
 helm install aerospike-release aerospike/aerospike \
-		 	 --set dbReplicas=5 \
-			 --set rbac.create=true \
-			 --set enableNodePortServices=true
+			 --set dbReplicas=5 \
+			 --set nodePortServices.enabled=true \
+			 --set nodePortServices.useExternalIP=true
 ```
 
 For Helm v2,
@@ -173,17 +188,17 @@ For Helm v2,
 ```sh
 helm install --name aerospike-release aerospike/aerospike \
 			 --set dbReplicas=5 \
-			 --set rbac.create=true \
-			 --set enableNodePortServices=true
+			 --set nodePortServices.enabled=true \
+			 --set nodePortServices.useExternalIP=true
 ```
 
-### **LoadBalancer Services Per Pod**
+### LoadBalancer Services Per Pod
 
 LoadBalancer type exposes the service externally using the cloud provider’s load balancer. A new external network load balancer is provisioned.
 
 > With LoadBalancer type services, it allows multiple aerospike pods per K8s host and at the same time expose each aerospike pod.
 
-To enable `LoadBalancer` services per pod, `enableLoadBalancerServices` option must be set to `true`.
+To enable `LoadBalancer` services per pod, set `loadBalancerServices.enabled` option to `true`.
 Aerospike helm chart will automatically create a `LoadBalancer` type service for each aerospike pod at the time of deployment.
 
 Applications can connect to the Aerospike cluster using `<LoadBalancerIngressIP>:<LoadBalancerPort>`.
@@ -194,15 +209,12 @@ asadm -h <LoadBalancerIngressIP> -p <LoadBalancerPort> --services-alternate
 
 > Use `helm upgrade` command to perform scale-up/scale-down when LoadBalancer type services are enabled.
 
-A service account with appropriate permissions is required to query the API server and read the `Service` type resources. An existing service account can be specified using `rbac.serviceAccountName`. To let Aerospike helm chart create a new `ServiceAccount` with appropriate `ClusterRole` set `rbac.create` to `true`. This `ServiceAccount` will be used with Aerospike Statefulset, and if monitoring is enabled, also with Prometheus, Grafana and Alertmanager Statefulsets.
-
 Example,
 
 ```sh
 helm install aerospike-release aerospike/aerospike \
-		 	 --set dbReplicas=5 \
-			 --set rbac.create=true \
-			 --set enableLoadBalancerServices=true
+			 --set dbReplicas=5 \
+			 --set loadBalancerServices.enabled=true
 ```
 
 For Helm v2,
@@ -210,61 +222,56 @@ For Helm v2,
 ```sh
 helm install --name aerospike-release aerospike/aerospike \
 			 --set dbReplicas=5 \
-			 --set rbac.create=true \
-			 --set enableLoadBalancerServices=true
+			 --set loadBalancerServices.enabled=true
 ```
 
-### **ClusterIP Services with External IPs**
+### ClusterIP Services with External IPs
 
 `ClusterIP` type exposes the service on a cluster-internal IP. With external IPs set, the service can be accessed from an external endpoint.
 
-With `enableExternalIpServices` option enabled, Aerospike helm chart will create a `ClusterIP` type service for each aerospike pod at the time of deployment. The external endpoints can be specified using `externalIpEndpoints` option.
+With `externalIPServices.enabled` option set to `true`, Aerospike helm chart will create a `ClusterIP` type service for each aerospike pod at the time of deployment. The external endpoints can be specified using `externalIPServices.externalIPEndpoints` option. Each external endpoint can contain an `IP`, `Port` and an optional `TLSPort` (when TLS is enabled).
 
 > Use `helm upgrade` command to perform scale-up/scale-down when ClusterIP-ExternalIP services are enabled.
 
-> Number of endpoints should be equal to the number of Aerospike pods (`dbReplicas`). Only one external IP and Port per Service can be specified.
-
-A service account with appropriate permissions is required to query the API server and read the `Service` type resources. An existing service account can be specified using `rbac.serviceAccountName`. To let Aerospike helm chart create a new `ServiceAccount` with appropriate `ClusterRole` set `rbac.create` to `true`. This `ServiceAccount` will be used with Aerospike Statefulset, and if monitoring is enabled, also with Prometheus, Grafana and Alertmanager Statefulsets.
+> Number of endpoints should be equal to or more than the number of Aerospike pods (`dbReplicas`). Only one external IP and Port per Service can be specified.
 
 Example,
 
 ```sh
 helm install aerospike-release aerospike/aerospike \
-		 	 --set dbReplicas=4 \
-			 --set rbac.create=true \
-			 --set enableExternalIpServices=true \
-			 --set externalIpEndpoints[0].IP=10.160.15.224 \
-			 --set externalIpEndpoints[0].Port=7001 \
-			 --set externalIpEndpoints[1].IP=10.160.15.224 \
-			 --set externalIpEndpoints[1].Port=7002 \
-			 --set externalIpEndpoints[2].IP=10.160.15.223 \
-			 --set externalIpEndpoints[2].Port=8001 \
-			 --set externalIpEndpoints[3].IP=10.160.15.223 \
-			 --set externalIpEndpoints[3].Port=8002
+			 --set dbReplicas=4 \
+			 --set externalIPServices.enabled=true \
+			 --set externalIPServices.externalIPEndpoints[0].IP=10.160.15.224 \
+			 --set externalIPServices.externalIPEndpoints[0].Port=7001 \
+			 --set externalIPServices.externalIPEndpoints[1].IP=10.160.15.224 \
+			 --set externalIPServices.externalIPEndpoints[1].Port=7002 \
+			 --set externalIPServices.externalIPEndpoints[2].IP=10.160.15.223 \
+			 --set externalIPServices.externalIPEndpoints[2].Port=8001 \
+			 --set externalIPServices.externalIPEndpoints[3].IP=10.160.15.223 \
+			 --set externalIPServices.externalIPEndpoints[3].Port=8002
 ```
 
 For Helm v2,
 
 ```sh
 helm install --name aerospike-release aerospike/aerospike \
-		 	 --set dbReplicas=4 \
-			 --set rbac.create=true \
-			 --set enableExternalIpServices=true \
-			 --set externalIpEndpoints[0].IP=10.160.15.224 \
-			 --set externalIpEndpoints[0].Port=7001 \
-			 --set externalIpEndpoints[1].IP=10.160.15.224 \
-			 --set externalIpEndpoints[1].Port=7002 \
-			 --set externalIpEndpoints[2].IP=10.160.15.223 \
-			 --set externalIpEndpoints[2].Port=8001 \
-			 --set externalIpEndpoints[3].IP=10.160.15.223 \
-			 --set externalIpEndpoints[3].Port=8002
+			 --set dbReplicas=4 \
+			 --set externalIPServices.enabled=true \
+			 --set externalIPServices.externalIPEndpoints[0].IP=10.160.15.224 \
+			 --set externalIPServices.externalIPEndpoints[0].Port=7001 \
+			 --set externalIPServices.externalIPEndpoints[1].IP=10.160.15.224 \
+			 --set externalIPServices.externalIPEndpoints[1].Port=7002 \
+			 --set externalIPServices.externalIPEndpoints[2].IP=10.160.15.223 \
+			 --set externalIPServices.externalIPEndpoints[2].Port=8001 \
+			 --set externalIPServices.externalIPEndpoints[3].IP=10.160.15.223 \
+			 --set externalIPServices.externalIPEndpoints[3].Port=8002
 ```
 
 ### Aerospike Monitoring Stack
 
 Aerospike Helm Chart provides Aerospike Monitoring Stack which includes an Aerospike prometheus exporter (sidecar), Prometheus statefulset, Grafana statefulset and Alertmanager statefulset.
 
-#### Deploy Aerospike Prometheus Exporter (only)
+### Deploy Aerospike Prometheus Exporter (only)
 Aerospike Prometheus Exporter (sidecar) can be enabled by setting `enableAerospikePrometheusExporter` option to `true`.
 
 ```sh
@@ -279,14 +286,13 @@ helm install --name aerospike-release aerospike/aerospike \
 			 --set enableAerospikePrometheusExporter=true
 ```
 
-#### Deploy Complete Monitoring Stack
+### Deploy Complete Monitoring Stack
 To deploy a complete monitoring stack which includes Prometheus, Grafana and Alertmanager, set `enableAerospikeMonitoring` option to `true`.
 
 Note that, setting `enableAerospikeMonitoring` to `true` will automatically enable Aerospike Prometheus Exporter (sidecar).
 
 ```sh
 helm install aerospike-release aerospike/aerospike \
-			 --set rbac.create=true \
 			 --set enableAerospikeMonitoring=true
 ```
 
@@ -294,7 +300,6 @@ For Helm v2,
 
 ```sh
 helm install --name aerospike-release aerospike/aerospike \
-			 --set rbac.create=true \
 			 --set enableAerospikeMonitoring=true
 ```
 
@@ -313,15 +318,16 @@ Check the below [configuration section](#configuration) or [`values.yaml`](value
 | Parameter                                             | Description                                                                                                                                                                               | Default Value                                                                                                        |
 | ------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------:|
 | `dbReplicas`                                          | Number of Aerospike nodes or pods in the cluster                                                                                                                                          | `3`                                                                                                                  |
-| `terminationGracePeriodSeconds`                       | Number of seconds to wait after `SIGTERM` before force killing the pod.                                                                                                                   | `120`                                                                                                                |
+| `terminationGracePeriodSeconds`                       | Number of seconds to wait after `SIGTERM` before force killing the pod.                                                                                                                   | `600`                                                                                                                |
 | `livenessProbe`                                       | Configure livenessProbe for Aerospike container                                                                                                                                           | `initialDelaySeconds=30`, `periodSeconds=30`, rest - kubernetes defaults                                             |
 | `readinessProbe`                                      | Configure readinessProbe for Aerospike container                                                                                                                                          | `initialDelaySeconds=30`, rest - kubernetes defaults                                                                 |
 | `clusterServiceDnsDomain`                             | Kubernetes cluster service DNS domain                                                                                                                                                     | `cluster.local`                                                                                                      |
 | `image.repository`                                    | Aerospike Server Docker Image                                                                                                                                                             | `aerospike/aerospike-server`                                                                                         |
-| `image.tag`                                           | Aerospike Server Docker Image Tag                                                                                                                                                         | `5.0.0.4`                                                                                                            |
+| `image.tag`                                           | Aerospike Server Docker Image Tag                                                                                                                                                         | `5.3.0.3`                                                                                                            |
 | `initImage.repository`                                | Aerospike Kubernetes Init Container Image                                                                                                                                                 | `aerospike/aerospike-kubernetes-init`                                                                                |
-| `initImage.tag`                                       | Aerospike Kubernetes Init Container Image Tag                                                                                                                                             | `1.1.0`                                                                                                              |
-| `autoGenerateNodeIds`                                 | Auto generate and assign node-id(s) based on Pod's Ordinal Index                                                                                                                          | `false`                                                                                                              |
+| `initImage.tag`                                       | Aerospike Kubernetes Init Container Image Tag                                                                                                                                             | `1.2.0`                                                                                                              |
+| `autoGenerateNodeIds`                                 | Auto generate and assign node-id(s) based on Pod's Ordinal Index                                                                                                                          | `true`                                                                                                               |
+| `nodeIDPrefix`                                        | Node ID prefix                                                                                                                                                                            | `a`                                                                                                                  |
 | `aerospikeNamespace`                                  | Aerospike Namespace name                                                                                                                                                                  | `test`                                                                                                               |
 | `aerospikeNamespaceMemoryGB`                          | Aerospike Namespace Memory in GB                                                                                                                                                          | `1`                                                                                                                  |
 | `aerospikeReplicationFactor`                          | Aerospike Namespace Replication Factor                                                                                                                                                    | `2`                                                                                                                  |
@@ -331,13 +337,14 @@ Check the below [configuration section](#configuration) or [`values.yaml`](value
 | `aerospikeFabricPort`                                 | Aerospike TCP Fabric Port                                                                                                                                                                 | `3001`                                                                                                               |
 | `aerospikeInfoPort`                                   | Aerospike TCP Info Port                                                                                                                                                                   | `3003`                                                                                                               |
 | `autoRolloutConfig`		   	                        | Rollout ConfigMap/Secrets changes on 'helm upgrade'    			                                                                                                                        | `false`					   	                                                                                       |
-| `hostNetworking`		 			                    | Enable `hostNetwork`. Allows Pods to access host network.			                                                                                                                        | `false`					   	                                                                                       |
-| `platform`		 				                    | Set platform. Use with `hostNetworking` and `enableNodePortServices` configuration to consider instance's external IP. Supported values - `eks` (AWS) or `gke` (GCP) or `none`    		| `none`					   	                                                                                       |
-| `enableNodePortServices`		 	                    | Enable NodePort Services (`Type: NodePort`) to expose aerospike statefulset                                                                                                               | `false`					   	                                                                                       |
-| `enableLoadBalancerServices`		                    | Enable LoadBalancer Services (`Type: LoadBalancer`) to expose aerospike statefulset                                                                                                       | `false`					                                                                                           |
-| `enableExternalIpServices`		                    | Enable external IP Services (`Type: ClusterIP`) to expose aerospike statefulset                                                                                                           | `false`					                                                                                           |
-| `externalIpEndpoints`		 		                    | Specify External IP/Port endpoints for `enableExternalIpServices`	                                                                                                                        | `{}` (nil)					   	                                                                                   |
-| `rbac.create`		 			                        | Create a new ServiceAccount with a new ClusterRole for Aerospike Statefulset                                                                                                              | `false`					   	                                                                                       |
+| `hostNetwork.enabled`		 			                | Enable `hostNetwork`. Allows Pods to access host network.			                                                                                                                        | `false`					   	                                                                                       |
+| `hostNetwork.useExternalIP`		 			        | Allow applications to connect using external IP of the instances			                                                                                                                | `false`					   	                                                                                       |
+| `nodePortServices.enabled`		 	                | Enable NodePort Services (`Type: NodePort`) to expose aerospike statefulset                                                                                                               | `false`					   	                                                                                       |
+| `nodePortServices.useExternalIP`		 			    | Allow applications to connect using external IP of the instances			                                                                                                                | `false`					   	                                                                                       |
+| `loadBalancerServices.enabled`		                | Enable LoadBalancer Services (`Type: LoadBalancer`) to expose aerospike statefulset                                                                                                       | `false`					                                                                                           |
+| `externalIPServices.enabled`		                    | Enable external IP Services (`Type: ClusterIP`) to expose aerospike statefulset                                                                                                           | `false`					                                                                                           |
+| `externalIPServices.externalIPEndpoints`		 		| Specify External IP/Port endpoints for `externalIPServices`	                                                                                                                            | `[]` (nil)					   	                                                                                   |
+| `rbac.create`		 			                        | Create a new ServiceAccount with a new ClusterRole for Aerospike Statefulset                                                                                                              | `true`					   	                                                                                       |
 | `rbac.serviceAccountName`		 	                    | Specify an existing ServiceAccount to use with Aerospike Statefulset                                                                                                                      | `default`					   	                                                                                       |
 | `antiAffinity`		 			                    | Enable `PodAntiAffinity` rule to schedule one Aerospike pod per node. Supported values - `off`, `soft`, `hard`                                                                            | `off`                                                                                                                |
 | `antiAffinityWeight`		 		                    | 'weight' in range 1-100 for "soft" antiAffinity option for Aerospike pods    			                                                                                                    | `1`					   		                                                                                       |
@@ -345,7 +352,7 @@ Check the below [configuration section](#configuration) or [`values.yaml`](value
 | `tolerations`		 				                    | Define tolerations for scheduling Aerospike pods based on node taints                                                                                                                     | `[]` (nil)				   	                                                                                       |
 | `nodeSelector`	 				                    | Define nodeSelector for scheduling Aerospike pods based on node labels                                                                                                                    | `{}` (nil)				   	                                                                                       |
 | `labels`	 				                            | Define labels for Aerospike StatefulSet                                                                                                                                                   | `{}` (nil)				   	                                                                                       |
-| `annotations`	 				                        | Define annotations for Aerospike StatefulSet                                                                                                                                             | `{}` (nil)				   	                                                                                       |
+| `annotations`	 				                        | Define annotations for Aerospike StatefulSet                                                                                                                                              | `{}` (nil)				   	                                                                                       |
 | `podLabels`	 				                        | Define labels for Aerospike pods                                                                                                                                                          | `{}` (nil)				   	                                                                                       |
 | `podAnnotations`	 				                    | Define annotations for Aerospike pods                                                                                                                                                     | `{}` (nil)				   	                                                                                       |
 | `persistenceStorage`                                  | Define Peristent Volumes to be used (Map - to define multiple volumes)                                                                                                                    | `{}` (nil)                                                                                                           |
@@ -359,24 +366,28 @@ Check the below [configuration section](#configuration) or [`values.yaml`](value
 | `enableAerospikePrometheusExporter` 	                | Enable Sidecar Aerospike Prometheus Exporter (only)                                                                                                                                       | `false`					   	                                                                                       |
 | `enableAerospikeMonitoring`		 	                | Enable Aerospike Monitoring - sidecar prometheus exporter, Prometheus, Grafana, Alertmanager stack                                                                                        | `false`					   	                                                                                       |
 | `exporter.repository`                                 | Aerospike prometheus exporter image repository                                                                                                                                            | `aerospike/aerospike-prometheus-exporter`                                                                            |
-| `exporter.tag`                                        | Aerospike prometheus exporter image tag                                                                                                                                                   | `1.0.0`                                                                                                              |
+| `exporter.tag`                                        | Aerospike prometheus exporter image tag                                                                                                                                                   | `latest`                                                                                                             |
+| `exporter.agentCertFile`                              | Certificate file for TLS between exporter and prometheus server                                                                                                                           | `"" (not defined)`                                                                                                   |
+| `exporter.agentKeyFile`                               | Key file for TLS between exporter and Prometheus server                                                                                                                                   | `"" (not defined)`                                                                                                   |
 | `exporter.metricLabels`                               | Aerospike prometheus exporter custom labels for metrics                                                                                                                                   | `""`                                                                                                                 |
 | `exporter.agentBindHost`                              | Aerospike prometheus exporter IP to bind to                                                                                                                                               | `""`                                                                                                                 |
 | `exporter.agentBindPort`                              | Aerospike prometheus exporter port to bind to                                                                                                                                             | `9145`                                                                                                               |
 | `exporter.agentTimeout`                               | Metrics server timeout (in seconds)                                                                                                                                                       | `10`                                                                                                                 |
+| `exporter.agentLogFile`                               | Aerospike prometheus exporter log file path                                                                                                                                               | `"" (not defined)`                                                                                                   |
 | `exporter.agentLogLevel`                              | Aerospike prometheus exporter logging level                                                                                                                                               | `"info"`                                                                                                             |
+| `exporter.httpBasicAuthUsername`                      | Basic HTTP Authentication username for `/metrics` URL of the aerospike prometheus exporter                                                                                                | `"" (not defined)`                                                                                                   |
+| `exporter.httpBasicAuthPassword`                      | Basic HTTP Authentication password for `/metrics` URL of the aerospike prometheus exporter                                                                                                | `"" (not defined)`                                                                                                   |
 | `exporter.aerospikeHost`                              | Aerospike container service IP to connect to                                                                                                                                              | `"localhost"`                                                                                                        |
 | `exporter.aerospikePort`                              | Aerospike container service port to connect to                                                                                                                                            | `3000`                                                                                                               |
-| `exporter.httpBasicAuthUsername`                      | Basic HTTP Authentication username for `/metrics` URL of the aerospike prometheus exporter                                                                                                | `""`                                                                                                                 |
-| `exporter.httpBasicAuthPassword`                      | Basic HTTP Authentication password for `/metrics` URL of the aerospike prometheus exporter                                                                                                | `""`                                                                                                                 |
-| `exporter.tickerTimeout`                              | Agent client timeout (in seconds) for sending command to aerospike container                                                                                                              | `5`                                                                                                                  |
-| `exporter.aerospikeAuthMode`                          | Security auth mode to be used by exporter to connect to aerospike container                                                                                                               | `""`                                                                                                                 |
-| `exporter.aerospikeAuthUser`                          | Username to be used by exporter to connect to aerospike container                                                                                                                         | `""`                                                                                                                 |
-| `exporter.aerospikeAuthPassword`                      | Password to be used by exporter to connect to aerospike container                                                                                                                         | `""`                                                                                                                 |
-| `exporter.namespaceMetricsWhitelist`                  | Namespace metrics whitelist for aerospike prometheus exporter                                                                                                                             | `not defined`                                                                                                        |
-| `exporter.setMetricsWhitelist`                        | Set metrics whitelist for aerospike prometheus exporter                                                                                                                                   | `not defined`                                                                                                        |
-| `exporter.nodeMetricsWhitelist`                       | Node metrics whitelist for aerospike prometheus exporter                                                                                                                                  | `not defined`                                                                                                        |
-| `exporter.xdrMetricsWhitelist`                        | XDR metrics whitelist for aerospike prometheus exporter                                                                                                                                   | `not defined`                                                                                                        |
+| `exporter.infoTimeout`                                | Timeout (in seconds) for sending info commands to aerospike container                                                                                                                     | `5`                                                                                                                  |
+| `exporter.namespaceMetricsAllowlist`                  | Namespace metrics allowlist for aerospike prometheus exporter                                                                                                                             | `not defined`                                                                                                        |
+| `exporter.setMetricsAllowlist`                        | Set metrics allowlist for aerospike prometheus exporter                                                                                                                                   | `not defined`                                                                                                        |
+| `exporter.nodeMetricsAllowlist`                       | Node metrics allowlist for aerospike prometheus exporter                                                                                                                                  | `not defined`                                                                                                        |
+| `exporter.xdrMetricsAllowlist`                        | XDR metrics allowlist for aerospike prometheus exporter                                                                                                                                   | `not defined`                                                                                                        |
+| `exporter.namespaceMetricsBlocklist`                  | Namespace metrics blocklist for aerospike prometheus exporter                                                                                                                             | `not defined`                                                                                                        |
+| `exporter.setMetricsBlocklist`                        | Set metrics blocklist for aerospike prometheus exporter                                                                                                                                   | `not defined`                                                                                                        |
+| `exporter.nodeMetricsBlocklist`                       | Node metrics blocklist for aerospike prometheus exporter                                                                                                                                  | `not defined`                                                                                                        |
+| `exporter.xdrMetricsBlocklist`                        | XDR metrics blocklist for aerospike prometheus exporter                                                                                                                                   | `not defined`                                                                                                        |
 | `prometheus.replicas`                                 | Number of replicas for prometheus statefulset                                                                                                                                             | `2`                                                                                                                  |
 | `prometheus.serverPort`                               | Prometheus server port                                                                                                                                                                    | `9090`                                                                                                               |
 | `prometheus.terminationGracePeriodSeconds`            | Number of seconds to wait after `SIGTERM` before force killing the pod.                                                                                                                   | `120`                                                                                                                |
@@ -385,7 +396,7 @@ Check the below [configuration section](#configuration) or [`values.yaml`](value
 | `prometheus.scrapeInterval`                           | Prometheus `scrape_interval` in seconds to define interval between each scrape                                                                                                            | `15s`                                                                                                                |
 | `prometheus.evaluationInterval`                       | How frequently to evaluate alert rules                                                                                                                                                    | `15s`                                                                                                                |
 | `prometheus.image.repository`                         | Prometheus Docker Image Repository                                                                                                                                                        | `prom/prometheus`                                                                                                    |
-| `prometheus.image.tag`                                | Prometheus Docker Image Tag                                                                                                                                                               | `v2.11.1`                                                                                                            |
+| `prometheus.image.tag`                                | Prometheus Docker Image Tag                                                                                                                                                               | `latest`                                                                                                             |
 | `prometheus.persistenceStorage`                       | Define storage for prometheus data                                                                                                                                                        | `{}` (nil)                                                                                                           |
 | `prometheus.volume`                                   | Define storage for prometheus data                                                                                                                                                        | `volume.mountPath: /data`,<br />`volume.name: prometheus-data`,<br />`volume.template: emptyDir: {}`                 |
 | `prometheus.resources`                                | Resource configuration (`requests` and `limits`)                                                                                                                                          | `{}` (nil)                                                                                                           |
@@ -398,7 +409,7 @@ Check the below [configuration section](#configuration) or [`values.yaml`](value
 | `grafana.httpPort`                                    | Grafana server `http_port`                                                                                                                                                                | `3000`                                                                                                               |
 | `grafana.plugins`                                     | Grafana plugins to install at startup                                                                                                                                                     | `"camptocamp-prometheus-alertmanager-datasource"`                                                                    |
 | `grafana.image.repository`                            | Grafana Docker Image Repository                                                                                                                                                           | `grafana/grafana`                                                                                                    |
-| `grafana.image.tag`                                   | Grafana Docker Image Tag                                                                                                                                                                  | `6.3.2`                                                                                                              |
+| `grafana.image.tag`                                   | Grafana Docker Image Tag                                                                                                                                                                  | `latest`                                                                                                             |
 | `grafana.terminationGracePeriodSeconds`               | Number of seconds to wait after `SIGTERM` before force killing the pod.                                                                                                                   | `120`                                                                                                                |
 | `grafana.livenessProbe`                               | Configure livenessProbe for Grafana container                                                                                                                                             | `initialDelaySeconds=30`, `timeoutSeconds=10`, `failureThreshold=10`, rest - kubernetes defaults                     |
 | `grafana.readinessProbe`                              | Configure readinessProbe for Grafana container                                                                                                                                            | `initialDelaySeconds=30`, `timeoutSeconds=10`, `failureThreshold=10`, rest - kubernetes defaults                     |
