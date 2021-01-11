@@ -2,6 +2,40 @@
 
 This file documents all notable changes to Aerospike Helm Chart (Community Edition).
 
+
+## [1.5.0](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.5.0)
+
+### Features
+
+- New init container
+- Network config to opt external or internal IPs when creating services
+- Support all configurations of the aerospike prometheus exporter
+
+### Improvements
+
+- Better container lifecycle events handling
+- Auto generate node-ids is now enabled by default
+- Increased termination grace period to `600` seconds
+- Node-id prefix now configurable
+- Update monitoring stack
+- Allow labels and annotations for pod and statefulset to be configured
+
+### Fixes
+
+- Remove chart version from labels to allow chart upgrades
+
+### Regular Updates
+
+- Added Chart `5.3.0` uses Aerospike server version `5.3.0.6`
+- Added Chart `5.2.0` uses Aerospike server version `5.2.0.15`
+- Added Chart `5.1.0` uses Aerospike server version `5.1.0.23`
+- Chart `5.0.0` updated to use Aerospike Server version `5.0.0.25`
+- Chart `4.9.0` updated to use Aerospike Server version `4.9.0.23`
+- Chart `4.8.0` updated to use Aerospike Server version `4.8.0.25`
+- Chart `4.7.0` updated to use Aerospike Server version `4.7.0.26`
+- Chart `4.6.0` updated to use Aerospike Server version `4.6.0.21`
+
+
 ## [1.4.0](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.4.0)
 - Added configuration to apply pod `tolerations` for node `taints`
 - Added configuration to apply `nodeSelectors`

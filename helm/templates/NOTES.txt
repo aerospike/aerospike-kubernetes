@@ -32,4 +32,4 @@ For Helm v3,
   $ helm status {{ .Release.Name }}
   $ helm get all {{ .Release.Name }}
 
-$ kubectl get all --namespace {{ .Release.Namespace }} -l "release={{ .Release.Name }}, chart={{ $.Chart.Name }}-{{ $.Chart.Version }}"
+$ kubectl get all --namespace {{ .Release.Namespace }} -l "release={{ .Release.Name }}, chart={{ $.Chart.Name }}"

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Copyright 2012-2020 Aerospike, Inc.
+# Copyright 2012-2021 Aerospike, Inc.
 #
 # Portions may be licensed to Aerospike, Inc. under one or more contributor
 # license agreements.
@@ -22,7 +22,7 @@ metadata:
   name: {{ .Release.Name }}-alertmanager
   labels: &Labels
     app: {{ template "aerospike.name" . }}-alertmanager
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    chart: {{ .Chart.Name }}
     release: {{ .Release.Name }}
     app.kubernetes.io/component: alertmanager
     unique-app: {{ .Release.Name }}-alertmanager

@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Copyright 2012-2020 Aerospike, Inc.
+# Copyright 2012-2021 Aerospike, Inc.
 #
 # Portions may be licensed to Aerospike, Inc. under one or more contributor
 # license agreements.
@@ -27,7 +27,7 @@
 dbReplicas: 3 # Also controls number of nodes in the aerospike cluster.
 
 # Number of seconds to wait after SIGTERM before force killing the pod.
-terminationGracePeriodSeconds: 120
+terminationGracePeriodSeconds: 600
 
 # liveness and readiness probe parameters (for aerospike containers)
 livenessProbe: {}
@@ -52,7 +52,7 @@ clusterServiceDnsDomain: cluster.local
 
 image:
   repository: aerospike/aerospike-server
-  tag: 5.0.0.4
+  tag: 5.3.0.6
 
 ### -------------------------------
 ### Aerospike init container image
@@ -60,7 +60,7 @@ image:
 
 initImage:
   repository: aerospike/aerospike-kubernetes-init
-  tag: 1.1.0
+  tag: 1.2.0
 
 
 ### ---------------------------------
@@ -68,7 +68,8 @@ initImage:
 ### ---------------------------------
 
 # Auto generate and assign node-id(s) based on Pod's Ordinal Index.
-autoGenerateNodeIds: false
+autoGenerateNodeIds: true
+# nodeIDPrefix: "a" # (optional) must be in hex only
 
 # Default Namespace related configuration
 
@@ -93,49 +94,81 @@ autoGenerateNodeIds: false
 # Alternatively, use 'kubectl rollout restart'
 autoRolloutConfig: false
 
-# HostNetworking and Platform
-# Platform can be set to "eks", "gke", or "none"
-# With 'platform' set and 'hostNetworking' enabled, client applications from outside the network can connect to Aerospike Cluster.
-hostNetworking: false
-platform: none
+# Networking
+
+# HostNetworking
+hostNetwork:
+  enabled: false
+  useExternalIP: false
 
 # Enable NodePort Services (Type: NodePort) to expose aerospike statefulset (Use helm upgrade for scale up/down).
-enableNodePortServices: false
+nodePortServices:
+  enabled: false
+  useExternalIP: false
 
 # Enable LoadBalancer Services (Type: LoadBalancer) to expose aerospike statefulset (Use helm upgrade for scale up/down).
-enableLoadBalancerServices: false
+loadBalancerServices:
+  enabled: false
 
 # Enable external IP Services (Type: ClusterIP) to expose aerospike statefulset (Use helm upgrade for scale up/down)
-enableExternalIpServices: false
-externalIpEndpoints: {}
-  # - IP: 10.160.15.216
-  #   Port: 7000
-  # - IP: 10.160.15.216
-  #   Port: 7001
-  # - IP: 10.160.15.216
-  #   Port: 7002
-  # - IP: 10.160.15.216
-  #   Port: 7003
-  # - IP: 10.160.15.216
-  #   Port: 7004
-  # - IP: 10.160.15.217
-  #   Port: 8000
-  # - IP: 10.160.15.217
-  #   Port: 8001
-  # - IP: 10.160.15.217
-  #   Port: 8002
-  # - IP: 10.160.15.217
-  #   Port: 8003
-  # - IP: 10.160.15.217
-  #   Port: 8004
+externalIPServices:
+  enabled: false
+  externalIPEndpoints: []
+    # - IP: 10.160.15.199
+    #   Port: 7000
+    # - IP: 10.160.15.199
+    #   Port: 7001
+    # - IP: 10.160.15.199
+    #   Port: 7002
+    # - IP: 10.160.15.200
+    #   Port: 7003
+    # - IP: 10.160.15.200
+    #   Port: 7004
+    # - IP: 10.160.15.200
+    #   Port: 8000
+    # - IP: 10.160.15.217
+    #   Port: 8001
+    # - IP: 10.160.15.217
+    #   Port: 8002
+    # - IP: 10.160.15.217
+    #   Port: 8003
+    # - IP: 10.160.15.217
+    #   Port: 8004
 
-# Create and use a new ServiceAccount with a new ClusterRole for the Aerospike Statefulset deployment. If already have one, specify serviceAccountName below leaving create=false.
-# <ReleaseName>-aerospike
-# This serviceAccountName is used for aerospike, prometheus, grafana and alertmanager statefulsets.
-# If the 'default' serviceAccount doesn't have enough permissions to read resources (or if you are not sure), set rbac.create=true.
+# Legacy network configurations (Don't worry, these are still supported)
+
+# hostNetworking: false
+# enableNodePortServices: false
+# enableLoadBalancerServices: false
+# enableExternalIpServices: false
+# externalIpEndpoints: []
+#   - IP: 10.160.15.199
+#     Port: 7000
+#   - IP: 10.160.15.199
+#     Port: 7001
+#   - IP: 10.160.15.199
+#     Port: 7002
+#   - IP: 10.160.15.200
+#     Port: 7003
+#   - IP: 10.160.15.200
+#     Port: 7004
+#   - IP: 10.160.15.200
+#     Port: 8000
+#   - IP: 10.160.15.217
+#     Port: 8001
+#   - IP: 10.160.15.217
+#     Port: 8002
+#   - IP: 10.160.15.217
+#     Port: 8003
+#   - IP: 10.160.15.217
+#     Port: 8004
+
+
+# Create and use a new ServiceAccount with a new ClusterRole for the Aerospike Statefulset deployment. If already have one, specify serviceAccountName below and set create=false.
+# This service account is also used for prometheus, grafana and alertmanager statefulsets when monitoring is enabled.
 rbac:
-  create: false
-  serviceAccountName: default
+  create: true
+  # serviceAccountName: default
 
 # Affinity / AntiAffinity configurations (For Aerospike Pods)
 # Setting 'antiAffinity' option will prevent two pods of the same release be scheduled on the same node.
@@ -253,26 +286,30 @@ enableAerospikeMonitoring: false
 
 exporterImage:
   repository: aerospike/aerospike-prometheus-exporter
-  tag: 1.0.0
+  tag: latest
 
 exporter: {}
+  # agentCertFile: ""
+  # agentKeyFile: ""
   # metricLabels: "zone='asia-south1-a', platform='Google Kubernetes Engine'"
   # agentBindHost: ""
   # agentBindPort: 9145
   # agentTimeout: 10
+  # agentLogFile: ""
   # agentLogLevel: "info"
   # httpBasicAuthUsername: ""
   # httpBasicAuthPassword: ""
   # aerospikeHost: "localhost"
   # aerospikePort: 3000
-  # tickerTimeout: 5
-  # aerospikeAuthMode: ""
-  # aerospikeAuthUser: ""
-  # aerospikeAuthPassword: ""
-  # namespaceMetricsWhitelist: ""
-  # setMetricsWhitelist: ""
-  # nodeMetricsWhitelist: ""
-  # xdrMetricsWhitelist: ""
+  # infoTimeout: 5
+  # namespaceMetricsAllowlist: ""
+  # setMetricsAllowlist: ""
+  # nodeMetricsAllowlist: ""
+  # xdrMetricsAllowlist: ""
+  # namespaceMetricsBlocklist: ""
+  # setMetricsBlocklist: ""
+  # nodeMetricsBlocklist: ""
+  # xdrMetricsBlocklist: ""
 
 
 ### -------------------------
@@ -313,7 +350,7 @@ prometheus:
   # Prometheus docker image
   image:
     repository: prom/prometheus
-    tag: v2.11.1
+    tag: latest
 
   # Define storage for Prometheus data
   persistenceStorage:
@@ -384,7 +421,7 @@ grafana:
   # Grafana docker image
   image:
     repository: grafana/grafana
-    tag: 6.3.2
+    tag: latest
 
   # Grafana statefulset configs
   terminationGracePeriodSeconds: 120

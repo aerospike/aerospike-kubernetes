@@ -1,5 +1,5 @@
 # ------------------------------------------------------------------------------
-# Copyright 2012-2020 Aerospike, Inc.
+# Copyright 2012-2021 Aerospike, Inc.
 #
 # Portions may be licensed to Aerospike, Inc. under one or more contributor
 # license agreements.
@@ -15,7 +15,7 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-{{- if .Values.enableNodePortServices }}
+{{- if or .Values.enableNodePortServices .Values.nodePortServices.enabled }}
 {{- $dot := . }}
 {{ range $podIndex := until (int .Values.dbReplicas) -}}
 ---
@@ -26,13 +26,14 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   labels:
     app: {{ template "aerospike.name" $dot }}
-    chart: {{ $.Chart.Name }}-{{ $.Chart.Version }}
+    chart: {{ $.Chart.Name }}
     release: {{ $.Release.Name }}
 spec:
   type: NodePort
   externalTrafficPolicy: Local
   ports:
   - port: {{ $.Values.aerospikeClientPort | default 3000 }}
+    name: aerospike-plain
   selector:
     statefulset.kubernetes.io/pod-name: "{{ $.Release.Name }}-{{ $.Chart.Name }}-{{ $podIndex }}"
 {{ end -}}
