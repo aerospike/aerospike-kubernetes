@@ -15,7 +15,7 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-{{- if .Values.enableLoadBalancerServices }}
+{{- if or .Values.enableLoadBalancerServices .Values.loadBalancerServices.enabled }}
 {{- $dot := . }}
 {{ range $podIndex := until (int .Values.dbReplicas) -}}
 ---

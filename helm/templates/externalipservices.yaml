@@ -15,8 +15,16 @@
 # the License.
 # ------------------------------------------------------------------------------
 
+{{- if and .Values.enableExternalIpServices .Values.externalIPServices.enabled }}
+{{ fail "Both legacy(enableExternalIpServices) and new(externalIPServices) are enabled! Use only one!" }}
+{{- end }}
+
 {{- if .Values.enableExternalIpServices }}
-{{ $length := len .Values.externalIpEndpoints }} {{ if lt $length (int .Values.dbReplicas) }}
+{{ $length := 0 }}
+{{- if .Values.externalIpEndpoints }}
+{{ $length = len .Values.externalIpEndpoints }}
+{{- end }}
+{{ if lt $length (int .Values.dbReplicas) }}
 {{ fail "Number of externalIpEndpoints should be equal to or more than dbReplicas" }}
 {{ end }}
 {{- $dot := . }}
@@ -36,6 +44,35 @@ spec:
     - {{ $ip := index $.Values.externalIpEndpoints $podIndex }} {{ $ip.IP }}
   ports:
     - port: {{ $ip := index $.Values.externalIpEndpoints $podIndex }} {{ $ip.Port }}
+      targetPort: {{ $.Values.aerospikeClientPort | default 3000 }}
+      protocol: TCP
+      name: client
+  selector:
+    statefulset.kubernetes.io/pod-name: "{{ $.Release.Name }}-{{ $.Chart.Name }}-{{ $podIndex }}"
+{{ end -}}
+{{- end }}
+
+{{- if .Values.externalIPServices.enabled }}
+{{ $length := len .Values.externalIPServices.externalIPEndpoints }} {{ if lt $length (int .Values.dbReplicas) }}
+{{ fail "Number of externalIPServices.externalIPEndpoints should be equal to or more than dbReplicas" }}
+{{ end }}
+{{- $dot := . }}
+{{ range $podIndex := until (int .Values.dbReplicas) -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "extip-{{ $.Release.Name }}-{{ $.Chart.Name }}-{{ $podIndex }}"
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    app: {{ template "aerospike.name" $dot }}
+    chart: {{ $.Chart.Name }}-{{ $.Chart.Version }}
+    release: {{ $.Release.Name }}
+spec:
+  externalIPs:
+    - {{ $ip := index $.Values.externalIPServices.externalIPEndpoints $podIndex }} {{ $ip.IP }}
+  ports:
+    - port: {{ $ip := index $.Values.externalIPServices.externalIPEndpoints $podIndex }} {{ $ip.Port }}
       targetPort: {{ $.Values.aerospikeClientPort | default 3000 }}
       protocol: TCP
       name: client

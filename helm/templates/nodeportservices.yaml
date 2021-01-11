@@ -15,7 +15,7 @@
 # the License.
 # ------------------------------------------------------------------------------
 
-{{- if .Values.enableNodePortServices }}
+{{- if or .Values.enableNodePortServices .Values.nodePortServices.enabled }}
 {{- $dot := . }}
 {{ range $podIndex := until (int .Values.dbReplicas) -}}
 ---

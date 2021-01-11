@@ -1,5 +1,4 @@
 [Agent]
-
 # File paths should be double quoted.
 # Certificate file for the metric servers for prometheus
 cert_file = "${AGENT_CERT_FILE}"
@@ -15,7 +14,10 @@ bind = "${AGENT_BIND_HOST}:${AGENT_BIND_PORT}"
 # metrics server timeout in seconds
 timeout = ${AGENT_TIMEOUT}
 
-# debug level can be info|warning,warn|error,err|debug
+# Exporter logging configuration
+# Log file path (optional, logs to console by default)
+# Level can be info|warning,warn|error,err|debug|trace ('info' by default)
+log_file = "${AGENT_LOG_FILE}"
 log_level = "${AGENT_LOG_LEVEL}"
 
 # Basic HTTP authentication for '/metrics'.
@@ -56,17 +58,31 @@ password="${AS_AUTH_PASSWORD}"
 # timeout for sending commands to the server node in seconds
 timeout=${TICKER_TIMEOUT}
 
-# Metrics Whitelist - If specified, only these metrics will be scraped. An empty list will exclude all metrics.
-# Commenting out the below whitelist configs will disable whitelisting (i.e. all metrics will be scraped).
+# Metrics Allowlist - If specified, only these metrics will be scraped. An empty list will exclude all metrics.
+# Commenting out the below allowlist configs will disable metrics filtering (i.e. all metrics will be scraped).
 
-# Namespace metrics whitelist
-# namespace_metrics_whitelist=[${NAMESPACE_METRICS_WHITELIST}]
+# Namespace metrics allowlist
+# namespace_metrics_allowlist=[${NAMESPACE_METRICS_ALLOWLIST}]
 
-# Set metrics whitelist
-# set_metrics_whitelist=[${SET_METRICS_WHITELIST}]
+# Set metrics allowlist
+# set_metrics_allowlist=[${SET_METRICS_ALLOWLIST}]
 
-# Node metrics whitelist
-# node_metrics_whitelist=[${NODE_METRICS_WHITELIST}]
+# Node metrics allowlist
+# node_metrics_allowlist=[${NODE_METRICS_ALLOWLIST}]
 
-# XDR metrics whitelist (only for server versions 5.0 and above)
-# xdr_metrics_whitelist=[${XDR_METRICS_WHITELIST}]
+# XDR metrics allowlist (only for Aerospike versions 5.0 and above)
+# xdr_metrics_allowlist=[${XDR_METRICS_ALLOWLIST}]
+
+# Metrics Blocklist - If specified, these metrics will be NOT be scraped.
+
+# Namespace metrics blocklist
+# namespace_metrics_blocklist=[${NAMESPACE_METRICS_BLOCKLIST}]
+
+# Set metrics blocklist
+# set_metrics_blocklist=[${SET_METRICS_BLOCKLIST}]
+
+# Node metrics blocklist
+# node_metrics_blocklist=[${NODE_METRICS_BLOCKLIST}]
+
+# XDR metrics blocklist (only for Aerospike versions 5.0 and above)
+# xdr_metrics_blocklist=[${XDR_METRICS_BLOCKLIST}]
