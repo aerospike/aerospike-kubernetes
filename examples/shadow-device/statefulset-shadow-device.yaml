@@ -97,7 +97,7 @@ spec:
               fieldPath: status.podIP
       initContainers:
       - name: aerospike-init
-        image: aerospike/aerospike-kubernetes-init:latest
+        image: aerospike/aerospike-kubernetes-init:1.1.0
         volumeMounts:
         - name: confdir
           mountPath: /etc/aerospike
