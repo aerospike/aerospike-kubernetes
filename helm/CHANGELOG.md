@@ -3,6 +3,20 @@
 This file documents all notable changes to Aerospike Helm Chart (Community Edition).
 
 
+## [1.5.1](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.5.1)
+
+### Regular Updates
+
+- Updated monitoring dashboards
+- Added Chart `5.4.0` for Aerospike server version `5.4.0.3`
+- Chart `5.3.0` updated to use Aerospike server version `5.3.0.8`
+- Chart `5.2.0` updated to use Aerospike server version `5.2.0.17`
+- Chart `5.1.0` updated to use Aerospike server version `5.1.0.25`
+- Chart `5.0.0` updated to use Aerospike server version `5.0.0.27`
+- Chart `4.9.0` updated to use Aerospike Server version `4.9.0.24`
+- Chart `4.8.0` updated to use Aerospike Server version `4.8.0.26`
+
+
 ## [1.5.0](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.5.0)
 
 ### Features
