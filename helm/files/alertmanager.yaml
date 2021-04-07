@@ -1,5 +1,7 @@
 # This is an example alertmanager.yaml which sends alert notifications to a slack channel.
-# Use "--set-file alertmanager.alertmanagerConfFilePath=<ConfigFilePath>" during "helm install" or "helm upgrade" to use custom alertmanager.yaml.
+# Use "--set-file alertmanager.alertmanagerConfFile=<ConfigFilePath>" during "helm install" or "helm upgrade" to use custom alertmanager.yaml.
+# or,
+# Use "--set alertmanager.alertmanagerConfFileBase64=<base64-encoded-alertmanager-conf-file>" during "helm install" or "helm upgrade" to use custom alertmanager.yaml.
 
 global:
   slack_api_url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"

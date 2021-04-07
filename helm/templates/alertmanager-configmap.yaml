@@ -26,11 +26,34 @@ metadata:
     release: {{ .Release.Name }}
     app.kubernetes.io/component: alertmanager
 data:
+  # default alertmanager configuration file
   {{ if .Files.Get "files/alertmanager.yaml" }}
   alertmanager.yaml: {{ tpl (.Files.Get "files/alertmanager.yaml") . | quote }}
   {{ end }}
+
+  {{- if and .Values.alertmanager.alertmanagerConfFilePath .Values.alertmanager.alertmanagerConfFile }}
+  {{ fail "Both legacy(alertmanager.alertmanagerConfFilePath) and new(alertmanager.alertmanagerConfFile) are configured! Use only one!" }}
+  {{- end }}
+
+  {{- if and (or .Values.alertmanager.alertmanagerConfFilePath .Values.alertmanager.alertmanagerConfFile) (.Values.alertmanager.alertmanagerConfFileBase64) }}
+  {{ fail "Both alertmanager.alertmanagerConfFilePath/alertmanager.alertmanagerConfFile and alertmanager.alertmanagerConfFileBase64 are configured! Use only one!" }}
+  {{- end }}
+
+  # old config for alertmanager configuration file
   {{ if (.Values.alertmanager.alertmanagerConfFilePath) }}
   alertmanager.yaml: |-
     {{ .Values.alertmanager.alertmanagerConfFilePath | nindent 4 | trim }}
+  {{ end }}
+
+  # new config for alertmanager configuration file
+  {{ if (.Values.alertmanager.alertmanagerConfFile) }}
+  alertmanager.yaml: |-
+    {{ .Values.alertmanager.alertmanagerConfFile | nindent 4 | trim }}
+  {{ end }}
+
+  # alertmanager configuration file provided as base64 encoded string
+  {{ if (.Values.alertmanager.alertmanagerConfFileBase64) }}
+  alertmanager.yaml: |-
+    {{ .Values.alertmanager.alertmanagerConfFileBase64 | b64dec | nindent 4 | trim }}
   {{ end }}
 {{- end }}

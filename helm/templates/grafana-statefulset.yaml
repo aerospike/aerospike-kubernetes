@@ -27,19 +27,28 @@ metadata:
     release: {{ .Release.Name }}
     app.kubernetes.io/component: grafana
     unique-app: {{ .Release.Name }}-grafana
+    {{- with .Values.grafana.labels }}{{ toYaml . | nindent 4 }}{{ end }}
+  {{- with .Values.grafana.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   serviceName: {{ .Release.Name }}-grafana
   replicas: {{ .Values.grafana.replicas }}
   selector:
-    matchLabels: *Labels
+    matchLabels:
+      <<: *Labels
+      {{- with .Values.grafana.podLabels }}{{ toYaml . | nindent 6 }}{{ end }}
   template:
     metadata:
-      labels: *Labels
+      labels:
+        <<: *Labels
+        {{- with .Values.grafana.podLabels }}{{ toYaml . | nindent 8 }}{{ end }}
       annotations:
         {{- if .Values.autoRolloutConfig }}
         # TODO: Add an entry for secrets when used in future
         checksum/config: {{ include (print $.Template.BasePath "/grafana-configmap.yaml") . | sha256sum }}
         {{- end }}
+        {{- with .Values.grafana.podAnnotations }}{{ toYaml . | nindent 8 }}{{ end }}
     spec:
       serviceAccountName: {{ if .Values.rbac.create }}{{ template "aerospike.fullname" . }}{{ else }}{{ .Values.rbac.serviceAccountName }}{{ end }}
       {{- if eq .Values.grafana.antiAffinity "hard" }}
@@ -184,6 +193,9 @@ spec:
     - metadata:
         name: {{ .Values.grafana.persistenceStorage.name }}
         labels: *Labels
+        {{- with $.Values.grafana.annotations }}
+        annotations: {{- toYaml . | nindent 10 }}
+        {{- end }}
       spec:
         volumeMode: {{ .Values.grafana.persistenceStorage.volumeMode }}
         accessModes:

@@ -28,6 +28,14 @@ metadata:
     app: {{ template "aerospike.name" $dot }}
     chart: {{ $.Chart.Name }}
     release: {{ $.Release.Name }}
+    {{- if $.Values.nodePortServices.labels }}
+    {{- with $.Values.nodePortServices.labels }}{{ toYaml . | nindent 4 }}{{ end }}
+    {{- end }}
+  {{- if $.Values.nodePortServices.annotations }}
+  {{- with $.Values.nodePortServices.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
 spec:
   type: NodePort
   externalTrafficPolicy: Local

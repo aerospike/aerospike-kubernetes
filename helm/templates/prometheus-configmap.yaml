@@ -74,11 +74,34 @@ data:
           replacement: $1
           action: replace
 
+  # default aerospike alert rules file
   {{ if .Files.Get "files/aerospike_rules.yaml" }}
   aerospike_rules.yaml: {{ tpl (.Files.Get "files/aerospike_rules.yaml") . | quote }}
   {{ end }}
+
+  {{- if and .Values.prometheus.aerospikeAlertRulesFilePath .Values.prometheus.aerospikeAlertRulesFile }}
+  {{ fail "Both legacy(prometheus.aerospikeAlertRulesFilePath) and new(prometheus.aerospikeAlertRulesFile) are configured! Use only one!" }}
+  {{- end }}
+
+  {{- if and (or .Values.prometheus.aerospikeAlertRulesFilePath .Values.prometheus.aerospikeAlertRulesFile) (.Values.prometheus.aerospikeAlertRulesFileBase64) }}
+  {{ fail "Both prometheus.aerospikeAlertRulesFilePath/prometheus.aerospikeAlertRulesFile and prometheus.aerospikeAlertRulesFileBase64 are configured! Use only one!" }}
+  {{- end }}
+
+  # old config for aerospike alert rules file
   {{ if (.Values.prometheus.aerospikeAlertRulesFilePath) }}
   aerospike_rules.yaml: |-
     {{ .Values.prometheus.aerospikeAlertRulesFilePath | nindent 4 | trim }}
+  {{ end }}
+
+  # new config for aerospike alert rules file
+  {{ if (.Values.prometheus.aerospikeAlertRulesFile) }}
+  aerospike_rules.yaml: |-
+    {{ .Values.prometheus.aerospikeAlertRulesFile | nindent 4 | trim }}
+  {{ end }}
+
+  # aerospike alert rules file provided as base64 encoded string
+  {{ if (.Values.prometheus.aerospikeAlertRulesFileBase64) }}
+  aerospike_rules.yaml: |-
+    {{ .Values.prometheus.aerospikeAlertRulesFileBase64 | b64dec | nindent 4 | trim }}
   {{ end }}
 {{- end }}
