@@ -2,6 +2,32 @@
 
 This file documents all notable changes to Aerospike Helm Chart (Community Edition).
 
+## [1.5.2](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.5.2)
+
+### Improvements
+
+- Support specifying args for aerospike container
+- Allow configuration of labels and annotations for services
+- Support for passing feature key file as a base64 encoded string
+- Support for passing aerospike configuration file as a base64 encoded string
+- Allow configuration labels, annotations for Prometheus, Alertmanager, Grafana statefulset and pods
+- Support for passing Aerospike alert rules and Alertmanager configuration file as a base64 encoded string
+
+### Fixes
+
+- Don't trim the statefulset name if the release name contains chart name
+
+### Regular Updates
+
+- Added Chart `5.5.0` for Aerospike server version `5.5.0.7`
+- Chart `5.4.0` updated to use Aerospike server version `5.4.0.9`
+- Chart `5.3.0` updated to use Aerospike server version `5.3.0.14`
+- Chart `5.2.0` updated to use Aerospike server version `5.2.0.24`
+- Chart `5.1.0` updated to use Aerospike server version `5.1.0.31`
+- Chart `5.0.0` updated to use Aerospike server version `5.0.0.33`
+- Chart `4.9.0` updated to use Aerospike Server version `4.9.0.30`
+- Chart `4.8.0` updated to use Aerospike Server version `4.8.0.31`
+
 
 ## [1.5.1](https://github.com/aerospike/aerospike-kubernetes/releases/tag/1.5.1)
 
