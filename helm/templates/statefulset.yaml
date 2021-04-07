@@ -35,10 +35,8 @@ spec:
   serviceName: {{ template "aerospike.fullname" . }}
   selector:
     matchLabels:
-      app: {{ template "aerospike.name" . }}
-      chart: {{ .Chart.Name }}
-      release: {{ .Release.Name }}
-      unique-app: {{ .Release.Name }}-aerospike
+      <<: *AerospikeDeploymentLabels
+      {{- with .Values.podLabels }}{{ toYaml . | nindent 6 }}{{ end }}
   replicas: {{ .Values.dbReplicas }}
   template:
     metadata:
@@ -47,7 +45,6 @@ spec:
         {{- with .Values.podLabels }}{{ toYaml . | nindent 8 }}{{ end }}
       annotations:
         {{- if .Values.autoRolloutConfig }}
-        # TODO: Add an entry for secrets when used in future
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
         {{- end }}
         {{- with .Values.podAnnotations }}{{ toYaml . | nindent 8 }}{{ end }}
@@ -104,6 +101,9 @@ spec:
       containers:
       - name: aerospike
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        {{- with .Values.args }}
+        args: {{- toYaml . | nindent 10 }}
+        {{- end }}
         securityContext:
 {{ toYaml .Values.securityContext | indent 10 }}
         ports:

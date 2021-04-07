@@ -26,6 +26,10 @@ metadata:
     release: {{ .Release.Name }}
     app.kubernetes.io/component: alertmanager
     unique-app: {{ .Release.Name }}-alertmanager
+    {{- with .Values.alertmanager.labels }}{{ toYaml . | nindent 4 }}{{ end }}
+  {{- with .Values.alertmanager.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   serviceName: {{ .Release.Name }}-alertmanager-operated
   replicas: {{ .Values.alertmanager.replicas }}
@@ -34,15 +38,20 @@ spec:
     type: {{ .Values.alertmanager.updateStrategy.type }}
   revisionHistoryLimit: 10
   selector:
-    matchLabels: *Labels
+    matchLabels:
+      <<: *Labels
+      {{- with .Values.alertmanager.podLabels }}{{ toYaml . | nindent 6 }}{{ end }}
   template:
     metadata:
-      labels: *Labels
+      labels:
+        <<: *Labels
+        {{- with .Values.alertmanager.podLabels }}{{ toYaml . | nindent 8 }}{{ end }}
       annotations:
         {{- if .Values.autoRolloutConfig }}
         # TODO: Add an entry for secrets when used in future
         checksum/config: {{ include (print $.Template.BasePath "/alertmanager-configmap.yaml") . | sha256sum }}
         {{- end }}
+        {{- with .Values.alertmanager.podAnnotations }}{{ toYaml . | nindent 8 }}{{ end }}
     spec:
       serviceAccountName: {{ if .Values.rbac.create }}{{ template "aerospike.fullname" . }}{{ else }}{{ .Values.rbac.serviceAccountName }}{{ end }}
       {{- if eq .Values.alertmanager.antiAffinity "hard" }}
@@ -158,6 +167,9 @@ spec:
     - metadata:
         name: {{ .Values.alertmanager.persistenceStorage.name }}
         labels: *Labels
+        {{- with $.Values.alertmanager.annotations }}
+        annotations: {{- toYaml . | nindent 10 }}
+        {{- end }}
       spec:
         volumeMode: {{ .Values.alertmanager.persistenceStorage.volumeMode }}
         accessModes:

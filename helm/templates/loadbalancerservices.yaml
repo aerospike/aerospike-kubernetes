@@ -28,6 +28,14 @@ metadata:
     app: {{ template "aerospike.name" $dot }}
     chart: {{ $.Chart.Name }}
     release: {{ $.Release.Name }}
+    {{- if $.Values.loadBalancerServices.labels }}
+    {{- with $.Values.loadBalancerServices.labels }}{{ toYaml . | nindent 4 }}{{ end }}
+    {{- end }}
+  {{- if $.Values.loadBalancerServices.annotations }}
+  {{- with $.Values.loadBalancerServices.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- end }}
 spec:
   type: LoadBalancer
   externalTrafficPolicy: Local

@@ -35,50 +35,22 @@ For Helm v2,
 helm install --name aerospike-release aerospike/aerospike --set dbReplicas=5
 ```
 
-### Test Output:
-
-```sh
-NAME:   aerospike-release
-LAST DEPLOYED: Fri Mar  6 15:50:33 2020
-NAMESPACE: default
-STATUS: DEPLOYED
-
-RESOURCES:
-==> v1/ConfigMap
-NAME                                            DATA   AGE
-aerospike-release-conf                          2      51m
-
-==> v1/Pod(related)
-NAME                                           READY   STATUS    RESTARTS   AGE
-pod/aerospike-release-aerospike-0              1/1     Running   0          49m
-pod/aerospike-release-aerospike-1              1/1     Running   0          49m
-pod/aerospike-release-aerospike-2              1/1     Running   0          48m
-
-==> v1/Service
-NAME                                             TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
-service/aerospike-release-aerospike              ClusterIP   None         <none>        3000/TCP   49m
-
-==> v1/StatefulSet
-NAME                                                      READY   AGE
-statefulset.apps/aerospike-release-aerospike              3/3     49m
-```
-
-```sh
-$ helm list
-NAME             	REVISION	UPDATED                 	STATUS  	CHART                     	APP VERSION	NAMESPACE
-aerospike-release	1       	Fri Mar  6 15:50:33 2020	DEPLOYED	aerospike-5.0.0             5.0.0.4   	default
-```
-
 ### Apply custom Aerospike configuration
 
-- To override the default `aerospike.template.conf`, set `confFilePath` to point to the custom `aerospike.conf` file or template.
+- To override the default `aerospike.template.conf`, set `aerospikeConfFile` to point to the custom `aerospike.conf` file or template.
 
-	> `confFilePath` should be a file path on helm "client" machine (where the user is running the command `helm install`).
+	> `aerospikeConfFile` should be a file path on helm "client" machine (where the user is running the command `helm install`).
 
-- `confFilePath` can be set using `--set-file` option,
+- `aerospikeConfFile` can be set using `--set-file` option,
 	```sh
 	helm install aerospike-release aerospike/aerospike \
-				 --set-file confFilePath=/tmp/aerospike_templates/aerospike.template.conf
+				 --set-file aerospikeConfFile=/tmp/aerospike_templates/aerospike.template.conf
+	```
+
+- Aerospike configuration file can also be passed in base64 encoded form. Use `aerospikeConfFileBase64` configuration to specify base64 encoded string of the Aerospike configuration file.
+	```sh
+	helm install aerospike-release aerospike/aerospike \
+				 --set aerospikeConfFileBase64=$(base64 /tmp/aerospike_templates/aerospike.template.conf)
 	```
 
 ### Storage configuration
@@ -303,13 +275,17 @@ helm install --name aerospike-release aerospike/aerospike \
 			 --set enableAerospikeMonitoring=true
 ```
 
-Use option `--set-file prometheus.aerospikeAlertRulesFilePath` to add a custom aerospike alert rules configuration file.
+Use option `--set-file prometheus.aerospikeAlertRulesFile` to add a custom aerospike alert rules configuration file.
 
-> `prometheus.aerospikeAlertRulesFilePath` should be a file path on helm "client" machine (where the user is running 'helm install')
+> `prometheus.aerospikeAlertRulesFile` should be a file path on helm "client" machine (where the user is running 'helm install')
 
-Use option `--set-file alertmanager.alertmanagerConfFilePath` to add an alertmanager configuration file.
+Aerospike alert rules file can also be passed in base64 encoded form. Use `prometheus.aerospikeAlertRulesFileBase64` configuration to specify base64 encoded string of the Aerospike alert rules file.
 
-> `alertmanager.alertmanagerConfFilePath` should be a file path on helm "client" machine (where the user is running 'helm install')
+Use option `--set-file alertmanager.alertmanagerConfFile` to add an alertmanager configuration file.
+
+> `alertmanager.alertmanagerConfFile` should be a file path on helm "client" machine (where the user is running 'helm install')
+
+Alertmanager configuration file can also be passed in base64 encoded form. Use `alertmanager.alertmanagerConfFileBase64` configuration to specify base64 encoded string of the alertmanager configuration file.
 
 Check the below [configuration section](#configuration) or [`values.yaml`](values.yaml) file for more details on configuration of the `Aerospike Prometheus Exporter`, `Prometheus`, `Grafana` and `Alertmanager`.
 
@@ -325,7 +301,7 @@ Check the below [configuration section](#configuration) or [`values.yaml`](value
 | `image.repository`                                    | Aerospike Server Docker Image                                                                                                                                                             | `aerospike/aerospike-server`                                                                                         |
 | `image.tag`                                           | Aerospike Server Docker Image Tag                                                                                                                                                         | `5.4.0.3`                                                                                                            |
 | `initImage.repository`                                | Aerospike Kubernetes Init Container Image                                                                                                                                                 | `aerospike/aerospike-kubernetes-init`                                                                                |
-| `initImage.tag`                                       | Aerospike Kubernetes Init Container Image Tag                                                                                                                                             | `latest`                                                                                                              |
+| `initImage.tag`                                       | Aerospike Kubernetes Init Container Image Tag                                                                                                                                             | `latest`                                                                                                             |
 | `autoGenerateNodeIds`                                 | Auto generate and assign node-id(s) based on Pod's Ordinal Index                                                                                                                          | `true`                                                                                                               |
 | `nodeIDPrefix`                                        | Node ID prefix                                                                                                                                                                            | `a`                                                                                                                  |
 | `aerospikeNamespace`                                  | Aerospike Namespace name                                                                                                                                                                  | `test`                                                                                                               |
@@ -336,6 +312,7 @@ Check the below [configuration section](#configuration) or [`values.yaml`](value
 | `aerospikeHeartbeatPort`                              | Aerospike TCP Hearbeat Port                                                                                                                                                               | `3002`                                                                                                               |
 | `aerospikeFabricPort`                                 | Aerospike TCP Fabric Port                                                                                                                                                                 | `3001`                                                                                                               |
 | `aerospikeInfoPort`                                   | Aerospike TCP Info Port                                                                                                                                                                   | `3003`                                                                                                               |
+| `args`                                                | Define additional arguments to be passed to the Aerospike container                                                                                                                       | `[]`                                                                                                                 |
 | `autoRolloutConfig`		   	                        | Rollout ConfigMap/Secrets changes on 'helm upgrade'    			                                                                                                                        | `false`					   	                                                                                       |
 | `hostNetwork.enabled`		 			                | Enable `hostNetwork`. Allows Pods to access host network.			                                                                                                                        | `false`					   	                                                                                       |
 | `hostNetwork.useExternalIP`		 			        | Allow applications to connect using external IP of the instances			                                                                                                                | `false`					   	                                                                                       |
@@ -360,9 +337,12 @@ Check the below [configuration section](#configuration) or [`values.yaml`](value
 | `resources`                                           | Resource configuration (`requests` and `limits`)                                                                                                                                          | `{}` (nil)                                                                                                           |
 | `podSecurityContext`                                  | Aerospike pod security context                                                                                                                                                            | `{}` (nil)                                                                                                           |
 | `securityContext`                                     | Aerospike container security context                                                                                                                                                      | `{}` (nil)                                                                                                           |
-| `confFilePath`                                        | Custom aerospike.conf file path on helm client machine (To be used during the runtime, `helm install` .. etc)                                                                             | `not defined`                                                                                                        |
-| `prometheus.aerospikeAlertRulesFilePath`              | Aerospike alert rules configuration file location on helm client machine (To be used during the runtime, `helm install` .. etc)                                                           | `not defined`                                                                                                        |
-| `alertmanager.alertmanagerConfFilePath`               | Alertmanager configuration file location on helm client machine (To be used during the runtime, `helm install` .. etc)                                                                    | `not defined`                                                                                                        |
+| `aerospikeConfFile`                                   | Custom aerospike.conf file path on helm client machine (To be used during the runtime, `helm install` .. etc)                                                                             | `not defined`                                                                                                        |
+| `aerospikeConfFileBase64`                             | Custom Aerospike configuration file as base64 encoded string                                                                                                                              | `"" (not defined)`                                                                                                   |
+| `prometheus.aerospikeAlertRulesFile`                  | Aerospike alert rules configuration file location on helm client machine (To be used during the runtime, `helm install` .. etc)                                                           | `not defined`                                                                                                        |
+| `prometheus.aerospikeAlertRulesFileBase64`            | Aerospike alert rules file as base64 encoded string                                                                                                                                       | `"" (not defined)`                                                                                                   |
+| `alertmanager.alertmanagerConfFile`                   | Alertmanager configuration file location on helm client machine (To be used during the runtime, `helm install` .. etc)                                                                    | `not defined`                                                                                                        |
+| `alertmanager.alertmanagerConfFileBase64`             | Alertmanager configuration file as base64 encoded string                                                                                                                                  | `"" (not defined)`                                                                                                   |
 | `enableAerospikePrometheusExporter` 	                | Enable Sidecar Aerospike Prometheus Exporter (only)                                                                                                                                       | `false`					   	                                                                                       |
 | `enableAerospikeMonitoring`		 	                | Enable Aerospike Monitoring - sidecar prometheus exporter, Prometheus, Grafana, Alertmanager stack                                                                                        | `false`					   	                                                                                       |
 | `exporter.repository`                                 | Aerospike prometheus exporter image repository                                                                                                                                            | `aerospike/aerospike-prometheus-exporter`                                                                            |

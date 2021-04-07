@@ -27,6 +27,10 @@ metadata:
     release: {{ .Release.Name }}
     app.kubernetes.io/component: prometheus
     unique-app: {{ .Release.Name }}-prometheus
+    {{- with .Values.prometheus.labels }}{{ toYaml . | nindent 4 }}{{ end }}
+  {{- with .Values.prometheus.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   serviceName: {{ .Release.Name }}-prometheus
   replicas: {{ .Values.prometheus.replicas }}
@@ -34,15 +38,20 @@ spec:
   updateStrategy:
     type: {{ .Values.prometheus.updateStrategy.type }}
   selector:
-    matchLabels: *Labels
+    matchLabels:
+      <<: *Labels
+      {{- with .Values.prometheus.podLabels }}{{ toYaml . | nindent 6 }}{{ end }}
   template:
     metadata:
-      labels: *Labels
+      labels:
+        <<: *Labels
+        {{- with .Values.prometheus.podLabels }}{{ toYaml . | nindent 8 }}{{ end }}
       annotations:
         {{- if .Values.autoRolloutConfig }}
         # TODO: Add an entry for secrets when used in future
         checksum/config: {{ include (print $.Template.BasePath "/prometheus-configmap.yaml") . | sha256sum }}
         {{- end }}
+        {{- with .Values.prometheus.podAnnotations }}{{ toYaml . | nindent 8 }}{{ end }}
     spec:
       serviceAccountName: {{ if .Values.rbac.create }}{{ template "aerospike.fullname" . }}{{ else }}{{ .Values.rbac.serviceAccountName }}{{ end }}
       {{- if eq .Values.prometheus.antiAffinity "hard" }}
@@ -164,6 +173,9 @@ spec:
     - metadata:
         name: {{ .Values.prometheus.persistenceStorage.name }}
         labels: *Labels
+        {{- with $.Values.prometheus.annotations }}
+        annotations: {{- toYaml . | nindent 10 }}
+        {{- end }}
       spec:
         volumeMode: {{ .Values.prometheus.persistenceStorage.volumeMode }}
         accessModes:

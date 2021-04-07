@@ -27,18 +27,35 @@ metadata:
     chart: {{ .Chart.Name }}
     release: {{ .Release.Name }}
 data:
-  # Use dynamically supplied aerospike.template.conf over the existing one.
+  # default aerospike configuration file
   {{ if .Files.Get "files/aerospike.template.conf" }}
   aerospike.template.conf: {{ tpl (.Files.Get "files/aerospike.template.conf") . | quote }}
   {{ end }}
+
+  {{- if and .Values.confFilePath .Values.aerospikeConfFile }}
+  {{ fail "Both legacy(confFilePath) and new(aerospikeConfFile) are configured! Use only one!" }}
+  {{- end }}
+
+  {{- if and (or .Values.confFilePath .Values.aerospikeConfFile) (.Values.aerospikeConfFileBase64) }}
+  {{ fail "Both confFilePath/aerospikeConfFile and aerospikeConfFileBase64 are configured! Use only one!" }}
+  {{- end }}
+
+  # old config for aerospike configuration file
   {{ if (.Values.confFilePath) }}
   aerospike.template.conf: |-
     {{ .Values.confFilePath | nindent 4 | trim }}
   {{ end }}
 
-  # Add on-start.sh script to configmap if available
-  {{ if .Files.Get "files/on-start.sh" }}
-  on-start.sh: {{ tpl (.Files.Get "files/on-start.sh") . | quote }}
+  # new config for aerospike configuration file
+  {{ if (.Values.aerospikeConfFile) }}
+  aerospike.template.conf: |-
+    {{ .Values.aerospikeConfFile | nindent 4 | trim }}
+  {{ end }}
+
+  # aerospike configuration file provided as base64 encoded string
+  {{ if (.Values.aerospikeConfFileBase64) }}
+  aerospike.template.conf: |-
+    {{ .Values.aerospikeConfFileBase64 | b64dec | nindent 4 | trim }}
   {{ end }}
 
   # Add aerospike-prometheus-exporter config template to config if monitoring is enabled and if the file is available
