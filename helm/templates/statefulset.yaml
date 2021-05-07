@@ -205,6 +205,8 @@ spec:
         ports:
         - containerPort: {{ .Values.exporter.agentBindPort | default 9145 }}
           name: exporter
+        resources:
+{{ toYaml .Values.AerospikePrometheusExporterResources | indent 10 }}
         volumeMounts:
         - name: apeconfdir
           mountPath: /etc/aerospike-prometheus-exporter

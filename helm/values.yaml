@@ -306,6 +306,13 @@ securityContext: {}
 # Enable Aerospike Prometheus Exporter ONLY - sidecar - aerospike prometheus exporter.
 # If enableAerospikeMonitoring is set to true, no need to set enableAerospikePrometheusExporter to true.
 enableAerospikePrometheusExporter: false
+AerospikePrometheusExporterResources: {}
+# limits:
+#   cpu: 1
+#   memory: 1Gi
+# requests:
+#   cpu: 1
+#   memory: 1Gi
 
 # Enable Aerospike Monitoring - sidecar prometheus exporter, Prometheus, Grafana, Alertmanager stack
 enableAerospikeMonitoring: false
