@@ -665,3 +665,7 @@ alertmanager:
 
   # Alertmanager configuration file as base64 encoded string
   # alertmanagerConfFileBase64:
+
+## @param extraDeploy Array of extra objects to deploy with the release
+##
+extraDeploy: []
