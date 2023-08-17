@@ -1,0 +1,240 @@
+# This file represents a list of metrics which are treated as Gauges while exporting to Prometheus or some other Observability tool.
+# to know more about these stats, please visit https://docs.aerospike.com
+
+#
+# SETS: below section define all Sets stats which are treated as Gauges
+#
+sets_gauge_stats = [
+
+    "device_data_bytes",
+    "index_populating",
+    "memory_data_bytes",
+    "objects",
+    "sindexes",
+    "tombstones",
+    "truncate_lut",
+]
+
+#
+# XDR: below section define all XDR stats which are treated as Gauges
+#
+xdr_gauge_stats = [
+    "compression_ratio",
+    "in_progress",
+    "in_queue",
+    "lag",
+    "lap_us",
+    "latency_ms",
+    "nodes",
+    "recoveries_pending",
+    "throughput",
+    "uncompressed_pct",
+]
+
+#
+# Sindex: below section define all Sindex stats which are treated as Gauges
+#
+sindex_gauge_stats = [
+    "entries_per_bval",
+    "entries_per_rec",
+    "entries",
+    "histogram",                    # removed in server6.0
+    "ibtr_memory_used",             # removed in server6.0
+    "keys", # removed in server6.0
+    "load_pct",
+    "load_time",
+    "loadtime",                     # removed in server6.0
+    "memory_used",                  # deprecated in server6.3 version and replaced by used_bytes
+    "nbtr_memory_used",             # removed in server6.0
+    "query_basic_avg_rec_count",    # removed in server6.0
+    "used_bytes",                   # added in server6.3 represents memory used by data (aka memory_used)
+]
+
+#
+# Node: below section define all Node stats which are treated as Gauges
+#
+
+node_gauge_stats = [
+    "batch_index_created_buffers",
+    "batch_index_huge_buffers",
+    "batch_index_proto_compression_ratio",
+    "batch_index_proto_uncompressed_pct",
+    "batch_index_queue",
+    "batch_index_unused_buffers",
+    "client_connections",
+    "cluster_clock_skew_ms",
+    "cluster_clock_skew_stop_writes_sec",
+    "cluster_integrity",
+    "cluster_is_member",
+    "cluster_max_compatibility_id",
+    "cluster_min_compatibility_id",
+    "cluster_size",
+    "dlog_free_pct",
+    "dlog_logged",
+    "dlog_used_objects",
+    "fabric_bulk_recv_rate",
+    "fabric_bulk_send_rate",
+    "fabric_connections",
+    "fabric_ctrl_recv_rate",
+    "fabric_ctrl_send_rate",
+    "fabric_meta_recv_rate",
+    "fabric_meta_send_rate",
+    "fabric_rw_recv_rate",
+    "fabric_rw_send_rate",
+    "failed_best_practices",
+    "heap_active_kbytes",
+    "heap_allocated_kbytes",
+    "heap_efficiency_pct",
+    "heap_mapped_kbytes",
+    "heap_site_count",
+    "heartbeat_connections",
+    "info_queue",
+    "migrate_partitions_remaining",
+    "objects",
+    "process_cpu_pct",
+    "proxy_in_progress",
+    "queries_active",
+    "rw_in_progress",
+    "scans_active",
+    "sindex_gc_list_creation_time",
+    "sindex_gc_list_deletion_time",
+    "system_free_mem_pct",
+    "system_kernel_cpu_pct",
+    "system_total_cpu_pct",
+    "system_user_cpu_pct",
+    "threads_detached",
+    "threads_joinable",
+    "threads_pool_active",
+    "threads_pool_total",
+    "time_since_rebalance",
+    "tombstones",
+    "tree_gc_queue",
+    "tsvc_queue",
+    #
+    # TODO: Do we need the below XDR Stats
+    #
+    "xdr_active_failed_node_sessions",
+    "xdr_active_link_down_sessions",
+    "xdr_global_lastshiptime",
+    "xdr_read_active_avg_pct",
+    "xdr_read_idle_avg_pct",
+    "xdr_read_latency_avg",
+    "xdr_read_reqq_used_pct",
+    "xdr_read_reqq_used",
+    "xdr_read_respq_used",
+    "xdr_read_txnq_used_pct",
+    "xdr_read_txnq_used",
+    "xdr_relogged_incoming",
+    "xdr_relogged_outgoing",
+    "xdr_ship_compression_avg_pct",
+    "xdr_ship_inflight_objects",
+    "xdr_ship_latency_avg",
+    "xdr_ship_outstanding_objects",
+    "xdr_throughput",
+    "xdr_timelag",
+]
+
+#
+# Namespace: below section define all Namespace stats which are treated as Gauges
+#
+namespace_gauge_stats =[
+
+    "appeals_rx_active",
+    "appeals_tx_active",
+    "appeals_tx_remaining",
+    "available_bin_names",
+    "cache_read_pct",
+    "clock_skew_stop_writes",
+    "dead_partitions",
+    "defrag_q",
+    "device_available_pct",
+    "device_compression_ratio",
+    "device_free_pct",
+    "device_total_bytes",
+    "device_used_bytes",
+    "effective_is_quiesced",
+    "effective_prefer_uniform_balance",
+    "effective_replication_factor",
+    "evict_ttl",
+    "hwm_breached",
+    "index_flash_alloc_bytes",
+    "index_flash_alloc_pct",
+    "index_flash_used_bytes",
+    "index_flash_used_pct",
+    "index_pmem_used_bytes",
+    "index_pmem_used_pct",
+    "master_objects",
+    "master_tombstones",
+    "memory_free_pct",
+    "memory_used_bytes",
+    "memory_used_data_bytes",
+    "memory_used_index_bytes",
+    "memory_used_set_index_bytes",
+    "memory_used_sindex_bytes",
+    "migrate_record_receives",
+    "migrate_record_retransmits",
+    "migrate_records_skipped",
+    "migrate_records_transmitted",
+    "migrate_rx_instances",
+    "migrate_rx_partitions_active",
+    "migrate_rx_partitions_initial",
+    "migrate_rx_partitions_remaining",
+    "migrate_signals_active",
+    "migrate_signals_remaining",
+    "migrate_tx_instances",
+    "migrate_tx_partitions_active",
+    "migrate_tx_partitions_imbalance",
+    "migrate_tx_partitions_initial",
+    "migrate_tx_partitions_lead_remaining",
+    "migrate_tx_partitions_remaining",
+    "n_nodes_quiesced",
+    "non_expirable_objects",
+    "non_replica_objects",
+    "non_replica_tombstones",
+    "ns_cluster_size",
+    "nsup_cycle_deleted_pct",
+    "nsup_cycle_duration",
+    "nsup_cycle_sleep_pct",
+    "objects",
+    "pending_quiesce",
+    "pmem_available_pct",
+    "pmem_compression_ratio",
+    "pmem_free_pct",
+    "pmem_total_bytes",
+    "pmem_used_bytes",
+    "prole_objects",
+    "prole_tombstones",
+    "query_aggr_avg_rec_count",
+    "query_basic_avg_rec_count",
+    "query_proto_compression_ratio",
+    "query_proto_uncompressed_pct",
+    "record_proto_compression_ratio",
+    "record_proto_uncompressed_pct",
+    "scan_proto_compression_ratio",
+    "scan_proto_uncompressed_pct",
+    "shadow_write_q",
+    "stop_writes",
+
+    "storage-engine.device.defrag_q",
+    "storage-engine.device.defrag_reads",
+    "storage-engine.device.defrag_writes",
+    "storage-engine.device.free_wblocks",
+    "storage-engine.device.shadow_write_q",
+    "storage-engine.device.used_bytes",
+    "storage-engine.device.write_q",
+    "storage-engine.file.defrag_q",
+    "storage-engine.file.defrag_reads",
+    "storage-engine.file.defrag_writes",
+    "storage-engine.file.free_wblocks",
+    "storage-engine.file.shadow_write_q",
+    "storage-engine.file.used_bytes",
+    "storage-engine.file.write_q",
+
+    "tombstones",
+    "truncate_lut",
+    "unavailable_partitions",
+    "unreplicated_records",
+    "write_q",
+    "xdr_bin_cemeteries",
+    "xdr_tombstones",
+]
