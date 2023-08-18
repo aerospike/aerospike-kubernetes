@@ -52,7 +52,7 @@ clusterServiceDnsDomain: cluster.local
 
 image:
   repository: aerospike/aerospike-server
-  tag: 5.5.0.7
+  tag: 6.4.0.1_1
 
 ### -------------------------------
 ### Aerospike init container image
