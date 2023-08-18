@@ -63,8 +63,8 @@ data:
   {{ if .Files.Get "files/ape.toml.template" }}
   ape.toml.template: {{ tpl (.Files.Get "files/ape.toml.template") . | quote }}
   {{ end }}
-  {{ if .Files.Get "files/gauge_stats_list.toml" }}
-  gauge_stats_list.toml: {{ tpl (.Files.Get "files/gauge_stats_list.toml") . | quote }}
+  {{ if .Files.Get "files/gauge_stats_list.toml.template" }}
+  gauge_stats_list.toml.template: {{ tpl (.Files.Get "files/gauge_stats_list.toml.template") . | quote }}
   {{ end }}
   {{- end }}
 ---
