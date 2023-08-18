@@ -64,7 +64,7 @@ data:
   ape.toml.template: {{ tpl (.Files.Get "files/ape.toml.template") . | quote }}
   {{ end }}
   {{ if .Files.Get "files/gauge_stats_list.toml" }}
-  ape.toml.template: {{ tpl (.Files.Get "files/gauge_stats_list.toml") . | quote }}
+  gauge_stats_list.toml: {{ tpl (.Files.Get "files/gauge_stats_list.toml") . | quote }}
   {{ end }}
   {{- end }}
 ---
