@@ -206,6 +206,10 @@ spec:
         - containerPort: {{ .Values.exporter.agentBindPort | default 9145 }}
           name: exporter
         volumeMounts:
+        - name: initconfigs
+          mountPath: /etc/aerospike-prometheus-exporter/gauge_stats_list.toml
+          subPath: gauge_stats_list.toml
+          readOnly: true
         - name: apeconfdir
           mountPath: /etc/aerospike-prometheus-exporter
         {{- range $lv := .Values.volumes }}
